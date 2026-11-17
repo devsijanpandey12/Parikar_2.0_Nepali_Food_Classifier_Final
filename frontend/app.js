@@ -512,7 +512,16 @@ matrixTabs.forEach((tab) => {
   });
 });
 
-window.addEventListener("DOMContentLoaded", () => {
+if ("scrollRestoration" in history) {
+  history.scrollRestoration = "manual";
+}
+
+window.addEventListener("DOMContentLoaded", async () => {
+  if (window.location.hash) {
+    history.replaceState(null, "", window.location.pathname);
+  }
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   initScrollAnimations();
-  loadSamples(0, true);
+  await loadSamples(0, true);
+  window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 });

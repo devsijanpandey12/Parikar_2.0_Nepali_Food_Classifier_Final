@@ -239,6 +239,20 @@ MODEL_DISPLAY_NAMES = {
     }
 }
 
+# Exact user-selected sample files per class (overrides test.csv default when specified)
+PINNED_SAMPLE_FILES = {
+    "chatpate": "chatpate/000035.jpg",
+    "chiya": "chiya/chiya_00041.jpg",
+    "dalbhat": "dalbhat/dalbhat_00034.jpg",
+    "jeri": "jeri/jeri (16).jpg",
+    "momo": "momo/momo_0058.jpg",
+    "pakauda": "pakauda/200.jpg",
+    "panipuri": "panipuri/483.jpg",
+    "samosa": "samosa/125.jpg",
+    "selroti": "selroti/selroti (325).jpg",
+    "yomari": "yomari/000008.jpg",
+}
+
 # Hand-picked default row offsets per class in test.csv so chiya, pakauda, and selroti display distinct, appetizing photos
 PREFERRED_SAMPLE_OFFSETS = {
     "chatpate": 0,
@@ -425,6 +439,17 @@ def get_sample_specimens(offset: int = 0):
     df = pd.read_csv(test_csv)
     samples = []
     for cls_key in CLASSES:
+        pinned_rel = PINNED_SAMPLE_FILES.get(cls_key)
+        if pinned_rel and (ROOT_DIR / pinned_rel).exists():
+            from urllib.parse import quote
+            samples.append({
+                "class_key": cls_key,
+                "name": DISH_CATALOG[cls_key]["name"],
+                "nepali": DISH_CATALOG[cls_key]["nepali"],
+                "rel_path": pinned_rel,
+                "image_url": f"/api/specimen-image?path={quote(pinned_rel)}"
+            })
+            continue
         sub = df[df["class_name"] == cls_key]
         if len(sub) > 0:
             base_idx = PREFERRED_SAMPLE_OFFSETS.get(cls_key, 0)
