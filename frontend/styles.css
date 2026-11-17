@@ -287,15 +287,56 @@ body {
 .hero-title {
   font-size: clamp(2.5rem, 4.3vw, 4.2rem);
   font-weight: 800;
-  line-height: 1.06;
+  line-height: 1.08;
   letter-spacing: -0.03em;
   margin-bottom: 1.1rem;
 }
 
+.word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.06em;
+}
+
+.word-inner {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(105%) rotate(2deg);
+  animation: wordReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+
+@keyframes wordReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(105%) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
 .accent-text {
-  background: linear-gradient(95deg, var(--accent), var(--accent-2));
+  background: linear-gradient(90deg, var(--accent), var(--accent-2), #FF8E53, var(--accent));
+  background-size: 250% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.shimmer-text {
+  animation: wordReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards, textShimmer 5.5s linear infinite;
+  animation-delay: var(--d, 0s), 0.9s;
+}
+
+@keyframes textShimmer {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 250% center;
+  }
 }
 
 .hero-subtitle {
@@ -421,6 +462,7 @@ body {
   transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
+  animation: cardPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .specimen-thumb:hover {

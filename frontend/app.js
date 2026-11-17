@@ -454,6 +454,7 @@ async function loadSamples(offset = 0, autoSelectFirst = false) {
     samples.forEach((s, idx) => {
       const btn = document.createElement("div");
       btn.className = "specimen-thumb";
+      btn.style.animationDelay = `${idx * 45}ms`;
       btn.innerHTML = `
         <img src="${s.image_url}" alt="${s.name}" loading="lazy" />
         <span>${s.name}</span>
