@@ -113,12 +113,55 @@ Unlike rigid objects (cars, airplanes, buildings) that have fixed geometric silh
 
 ---
 
-## 7. Chronological Action & Experiment Log
+## 7. Systematic Model Benchmark Results
+
+### Experiment 1: `ConvNeXt-Tiny` (`27,827,818` Parameters — RTX 4050 6GB, `bfloat16`)
+- **Training Setup:**
+  - **Epoch 1 (Phase 1 — Frozen Backbone Warmup):** `lr=1e-3` on the 10-class head only. Prevented random classifier gradients from corrupting ImageNet `7×7` depthwise filters; reached **`97.58%` Val Top-1** (`97.50%` Macro-F1) in just 1 epoch (`78.4s`).
+  - **Epochs 2–6 (Phase 2 — Full Fine-Tuning):** Unfroze full backbone (`lr_backbone=1.5e-4`, `lr_head=5e-4`) with Cosine Annealing, `WeightedRandomSampler` using smoothed square-root weights ($\sqrt{\bar{N}/N_c}$), and `CrossEntropyLoss(label_smoothing=0.1)`.
+- **Why 6 Epochs Was Optimal:** Validation loss steadily dropped from `0.2197` (Epoch 1) $\to$ `0.1286` (Epoch 2) $\to$ `0.1200` (Epoch 3) $\to$ `0.1106` (Epoch 5) $\to$ **`0.1103` (Epoch 6)**, where Validation Macro-F1 peaked at **`99.12%`**.
+
+#### Epoch-by-Epoch Progression (`experiments/convnext_tiny/training_history.json`)
+
+| Epoch | Training Phase | Train Loss | Train Acc | Val Loss | Val Top-1 Acc | Val Top-3 Acc | Val Balanced Acc | Val Macro-F1 | Time (s) |
+| :---: | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | Phase 1 (Head Warmup) | 0.9073 | 87.78% | 0.2197 | 97.58% | 99.49% | 97.92% | 97.50% | 78.4s |
+| 2 | Phase 2 (Full Fine-Tune) | 0.6043 | 97.27% | 0.1286 | 98.99% | 99.60% | 98.89% | 98.90% | 108.6s |
+| 3 | Phase 2 (Full Fine-Tune) | 0.5396 | 98.90% | 0.1200 | 98.59% | 99.60% | 98.26% | 98.46% | 105.7s |
+| 4 | Phase 2 (Full Fine-Tune) | 0.5208 | 99.50% | 0.1224 | 98.38% | 99.80% | 98.05% | 98.09% | 80.0s |
+| 5 | Phase 2 (Full Fine-Tune) | 0.5107 | 99.84% | 0.1106 | 99.19% | 99.80% | 98.76% | 99.00% | 98.7s |
+| **6** | **Phase 2 (Best Checkpoint)** | **0.5082** | **99.90%** | **0.1103** | **99.29%** | **99.80%** | **99.06%** | **99.12%** | **101.9s** |
+
+#### Held-Out Test Set Evaluation (`990` Unseen Images — `experiments/convnext_tiny/evaluation_report.json`)
+- **Test Top-1 Accuracy:** **`99.49%`** (`985 / 990` correct)
+- **Test Top-3 Accuracy:** **`99.90%`**
+- **Test Balanced Accuracy (Macro Recall):** **`99.51%`**
+- **Test Macro Precision:** **`99.53%`**
+- **Test Macro F1-Score:** **`99.51%`**
+- **Test Inference Speed:** **`19.48 ms / image`**
+
+| Class | Test Support | Precision | Recall | F1-Score | Imbalance Takeaway |
+| :--- | ---: | ---: | ---: | ---: | :--- |
+| `chatpate` *(Smallest Class)* | 34 | **100.00%** | **100.00%** | **100.00%** | Zero false negatives or false positives despite 6.5:1 minority ratio |
+| `yomari` *(2nd Smallest)* | 42 | **100.00%** | **100.00%** | **100.00%** | Zero confusion with steamed `momo` |
+| `dalbhat` *(3rd Smallest)* | 61 | 98.39% | **100.00%** | 99.19% | 100% recall on full thali plates |
+| `jeri` | 122 | **100.00%** | **100.00%** | **100.00%** | Color-safe augmentation preserved golden syrup cues |
+| `momo` *(Largest Class)* | 222 | 99.55% | **100.00%** | 99.78% | 222/222 recalled without dominating minority predictions |
+| `selroti` | 104 | **100.00%** | 99.04% | 99.52% | 103/104 correct |
+| `panipuri` | 87 | **100.00%** | 98.85% | 99.42% | 86/87 correct |
+| `pakauda` | 80 | **100.00%** | 98.75% | 99.37% | 79/80 correct |
+| `samosa` | 128 | **100.00%** | 98.44% | 99.21% | 126/128 correct |
+| `chiya` | 110 | 97.35% | **100.00%** | 98.65% | 110/110 recalled |
+
+---
+
+## 8. Chronological Action & Experiment Log
 - **[2026-11-17]** Audited workspace structure (`10,025` raw images across `10` classes).
 - **[2026-11-17]** Verified `hydro` Anaconda environment: `Python 3.11.15`, `PyTorch 2.13.0+cu130`, `Torchvision 0.28.0+cu130` on **NVIDIA GeForce RTX 4050 Laptop GPU (6.0 GB VRAM)**.
 - **[2026-11-17]** Ran `src/prepare_dataset.py` across all `10,025` files:
   - Found `0` corrupted images.
-  - Caught and filtered **`121` exact MD5 byte-for-byte duplicate images** (e.g., `chatpate/000054.jpg` == `chatpate/000043.jpg`, `chiya/chiya_0051.jpg` == `chiya/chiya_0001.jpg`, `jeri/jeri (222).jpg` == `jeri/jeri (112).jpg`) *before* splitting so identical images never leak across train/val/test.
+  - Caught and filtered **`121` exact MD5 byte-for-byte duplicate images** *before* splitting so identical images never leak across train/val/test.
   - Produced `9,904` unique verified images split stratified 80/10/10 into `splits/train.csv` (`7,924`), `splits/val.csv` (`990`), and `splits/test.csv` (`990`).
 - **[2026-11-17]** Built two-stage transfer learning & evaluation script (`src/train_and_eval.py`) supporting `convnext_tiny`, `efficientnet_v2_s`, `swin_t`, and `vit_b_16` with `bfloat16` mixed precision and full evaluation metrics.
+- **[2026-11-17]** Trained & evaluated Model 1 (`convnext_tiny`) for 6 epochs on RTX 4050 GPU: achieved **`99.29%` Val Top-1 (`99.12%` Val Macro-F1)** and **`99.49%` Test Top-1 (`99.51%` Test Macro-F1, `100%` F1 on minority classes `chatpate` and `yomari`)**.
 

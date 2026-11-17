@@ -37,5 +37,15 @@ Before training any model, we ran an automated integrity and cryptographic dedup
 
 ---
 
+## Model Benchmark Results (Held-Out Test Set — `990` Unseen Images)
+
+| Model Architecture | Params | Val Top-1 | Val Macro-F1 | Test Top-1 Acc | Test Top-3 Acc | Test Balanced Acc | Test Macro-F1 | `chatpate` F1 (Minority) | Latency |
+| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| **`ConvNeXt-Tiny`** | 27.8M | 99.29% | 99.12% | **99.49%** | **99.90%** | **99.51%** | **99.51%** | **100.00%** | 19.48 ms |
+| **`EfficientNetV2-S`** | 20.2M | *Training...* | *Training...* | *Training...* | *Training...* | *Training...* | *Training...* | *Training...* | *Training...* |
+| **`Swin-Tiny`** | 27.5M | *Queued* | *Queued* | *Queued* | *Queued* | *Queued* | *Queued* | *Queued* | *Queued* |
+
+---
+
 ## Project Log & Interview Notes
 Detailed engineering decisions, trade-offs, and experiment logs are tracked in **[docs/project_log.md](docs/project_log.md)**.
