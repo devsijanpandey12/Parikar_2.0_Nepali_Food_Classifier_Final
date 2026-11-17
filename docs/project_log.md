@@ -241,33 +241,37 @@ A standard $K = 10$ softmax classifier enforces $\sum_{i=1}^{10} p_i = 1$. Witho
      $$\hat{H}_{\text{ideal}} = -\frac{0.91 \ln(0.91) + 9 \times 0.01 \ln(0.01)}{\ln(10)} = \frac{0.5004}{2.3026} \approx \mathbf{0.217}$$
    - Furthermore, running **two convolutional networks** (`ConvNeXt-Tiny`, `EfficientNetV2-S`) alongside **one hierarchical Vision Transformer** (`Swin-Tiny`) provides natural inductive-bias diversity: on genuine Nepali food, local convolutional texture filters and global shifted-window attention agree **`>98%` of the time**, whereas on out-of-distribution objects they diverge sharply.
 
-### The 5 Mathematical Signals Evaluated in `backend/app.py` (`evaluate_ood_gate`)
+### The 3-Layer Open-Set Defense Evaluated in `backend/app.py` (`evaluate_ood_gate`)
 
-For each model inference with raw logit vector $z \in \mathbb{R}^{10}$ and sorted softmax probabilities $p_{(1)} \ge p_{(2)} \ge \dots \ge p_{(10)}$:
+Because a closed-set 10-class linear classifier $z = f(x)W^T + b$ projects 768-dimensional features onto a 10-dimensional hyperplane subspace (ignoring the 758 orthogonal feature dimensions), a single confidence threshold can still be fooled by real-world non-food objects (e.g., webcam faces, laptops, phones, rooms) or outside Western foods (pizza, burger, fruits). To solve this without retraining the 3 main models, `backend/app.py` implements a **3-Layer Open-Set Rejection Gate**:
 
-1. **Maximum Softmax Probability (`confidence`):**
-   $$\text{MSP}(x) = p_{(1)} \times 100\% \quad \text{(Threshold: } \ge 60.0\% \text{)}$$
-2. **Top-1 vs. Top-2 Decision Margin (`margin`):**
-   $$M(x) = \left(p_{(1)} - p_{(2)}\right) \times 100\% \quad \text{(Threshold: } \ge 35.0\% \text{)}$$
-3. **Normalized Shannon Entropy (`normalized_entropy`):**
-   $$\hat{H}(p) = -\frac{1}{\ln(10)} \sum_{i=1}^{10} p_i \ln(p_i) \in [0, 1] \quad \text{(Threshold: } \le 0.52 \text{)}$$
-4. **Pre-Softmax Maximum Logit & Helmholtz Energy Score (`max_logit`, `energy_score`):**
-   $$z_{\max} = \max_{i} z_i \quad \text{(Threshold: } \ge 2.60 \text{)}, \qquad E(x) = -\ln \sum_{i=1}^{10} e^{z_i}$$
-   *(Raw logit magnitude detects when none of the 10 class detectors fired strongly before softmax normalization.)*
-5. **Cross-Architecture Consensus (`ConvNeXt-Tiny` + `EfficientNetV2-S` + `Swin-Tiny`):**
-   - If all 3 architectures vote for **3 different classes** (`distinct_predictions_count == 3`), the input is immediately rejected.
-   - If 2/3 architectures agree (`Split Verdict`) but ensemble mean confidence is `< 78.0%` (or any single model is `< 58.0%`), the input is rejected.
-   - Even if all 3 architectures happen to pick the same fallback class, if ensemble mean confidence is `< 68.0%` or minimum model confidence is `< 50.0%`, the input is rejected.
+1. **Layer 1 — Pretrained ImageNet-1K Semantic Domain Verifier (`models_onnx/semantic_gate.onnx`):**
+   - Uses a lightweight `MobileNetV3-Small` ONNX session (`9.71 MB`, `~2.5 ms` CPU inference) alongside a 120-class **Culinary Domain Mask** (`allowed_imagenet_indices.json`) calibrated across `600` training images from `splits/train.csv`.
+   - On all 10 Nepali dishes, **`81.2% – 99.9%`** of the semantic probability mass falls inside these 120 culinary-compatible indices (`test median = 93.89%`).
+   - Immediately rejects:
+     - **Non-Food Objects / Webcam Faces / Electronics / Animals / Rooms:** Whenever a non-culinary ImageNet class exceeds `32.0%` top-1 probability or total culinary domain mass drops below `38.0%`.
+     - **Explicit Outside Foods:** Whenever non-Nepali foods (`pizza`, `cheeseburger`, `hotdog`, `ice cream`, `strawberry`, `banana`, `pineapple`, `orange`, `lemon`, etc.) appear as top-1 with `>= 22.0%` probability.
+2. **Layer 2 — 768-D Penultimate Feature Prototype Cosine Similarity (`models_onnx/convnext_centroids.npy`):**
+   - Exposes the 768-dimensional penultimate LayerNormed embedding $f(x) \in \mathbb{R}^{768}$ (`/classifier/classifier.1/Flatten_output_0`) in `convnext_tiny.onnx` and computes the cosine similarity to the 10 class centroids $\mu_c \in \mathbb{R}^{768}$ derived from `splits/train.csv`:
+     $$S_{\cos}(x, \mu_{\hat{y}}) = \frac{f(x) \cdot \mu_{\hat{y}}}{\|f(x)\|_2 \|\mu_{\hat{y}}\|_2} \quad \text{(Threshold: } \ge 0.85 \text{)}$$
+   - True Nepali dishes in `splits/test.csv` achieve a median 768-D cosine similarity of **`0.9822`** (`p5 = 0.9386`, pinned samples `0.9645 – 0.9920`).
+3. **Layer 3 — Tightened Label-Smoothed Softmax, Entropy, Logit Energy & 3-Architecture Consensus:**
+   - **Maximum Softmax Probability (`confidence`):** $\ge 78.0\%$ (`test median = 92.01%`)
+   - **Top-1 vs. Top-2 Margin (`margin`):** $\ge 60.0\%$ (`test median = 91.03%`)
+   - **Normalized Shannon Entropy (`normalized_entropy`):** $\hat{H}(p) \le 0.36$ (`test median = 0.20`)
+   - **Pre-Softmax Maximum Logit (`max_logit`):** $z_{\max} \ge 3.35$ (`test median = 4.16`)
+   - **Cross-Architecture Consensus (`ConvNeXt-Tiny` + `EfficientNetV2-S` + `Swin-Tiny`):** Rejects 3-way disagreements, split verdicts with ensemble mean `< 86.0%` (or min `< 72.0%`), or unanimous fallbacks with mean `< 80.0%` (or min `< 68.0%`).
 
 ### Empirical Calibration (`splits/test.csv` vs. Out-of-Distribution Inputs)
 
-| Metric Signal (`ConvNeXt-Tiny`) | Held-Out Test Set (`p5`–`p95` Range) | Held-Out Test Median | Calibrated OOD Gate Threshold | Typical OOD Input (Noise / Non-Food / Blank) |
+| Metric Signal (`ConvNeXt-Tiny` + Semantic Gate) | Held-Out Test Set (`p5`–`p95` Range) | Held-Out Test Median | Calibrated OOD Gate Threshold | Typical OOD Input (Objects / Outside Food / Noise) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Top-1 Confidence (`MSP`)** | `90.88% – 92.99%` | `92.01%` | **`< 60.0%` triggers OOD** | `15.9% – 24.7%` |
-| **Top-1 / Top-2 Margin (`M`)** | `89.60% – 92.12%` | `91.03%` | **`< 35.0%` triggers OOD** | `1.8% – 9.0%` |
-| **Normalized Entropy (`H / ln 10`)** | `0.18 – 0.22` | `0.20` | **`> 0.52` triggers OOD** | `0.91 – 0.97` |
-| **Max Pre-Softmax Logit (`z_max`)** | `4.02 – 4.43` | `4.16` | **`< 2.60` triggers OOD** | `0.53 – 1.22` |
-| **Helmholtz Energy (`E(x)`)** | `-4.50 to -4.08` | `-4.25` | Diagnostic telemetry | `-2.62 to -2.24` |
+| **Culinary Domain Mass (`semantic_gate.onnx`)** | `48.03% – 99.60%` | `93.89%` | **`< 38.0%` or Non-Food Top-1 triggers OOD** | `0.1% – 18.0%` |
+| **768-D Centroid Cosine Similarity (`S_cos`)** | `0.9386 – 0.9920` | `0.9822` | **`< 0.85` triggers OOD** | `0.35 – 0.79` |
+| **Top-1 Confidence (`MSP`)** | `90.88% – 92.99%` | `92.01%` | **`< 78.0%` triggers OOD** | `15.9% – 72.0%` |
+| **Top-1 / Top-2 Margin (`M`)** | `89.60% – 92.12%` | `91.03%` | **`< 60.0%` triggers OOD** | `1.8% – 48.0%` |
+| **Normalized Entropy (`H / ln 10`)** | `0.18 – 0.22` | `0.20` | **`> 0.36` triggers OOD** | `0.42 – 0.97` |
+| **Max Pre-Softmax Logit (`z_max`)** | `4.02 – 4.43` | `4.16` | **`< 3.35` triggers OOD** | `0.53 – 3.10` |
 
 - **Empirical In-Distribution Acceptance Rate:** **`98.33%`** (`295 / 300` stratified unseen test images accepted) and **`100%` (`10 / 10`)** across all pinned showcase samples.
 - **Empirical Out-of-Distribution Rejection Rate:** **`100%`** across synthetic noise, blank/solid color frames, and non-food document/chart graphics.

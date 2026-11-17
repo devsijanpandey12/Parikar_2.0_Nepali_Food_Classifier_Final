@@ -281,12 +281,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def disable_static_cache(request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path in ("/", "/index.html", "/app.js", "/styles.css"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    return response
+
+
 ORT_SESSIONS: Dict[str, ort.InferenceSession] = {}
 ONNX_MANIFEST: Dict = {}
+CONVNEXT_CENTROIDS: Optional[np.ndarray] = None
+SEMANTIC_GATE_SESSION: Optional[ort.InferenceSession] = None
+IMAGENET_CATEGORIES: List[str] = []
+ALLOWED_IMAGENET_INDICES: List[int] = []
+EXPLICIT_OUTSIDE_FOODS: set = set()
+CONVNEXT_FEAT_NODE = "/classifier/classifier.1/Flatten_output_0"
 
 
 def load_models():
-    global ONNX_MANIFEST
+    global ONNX_MANIFEST, CONVNEXT_CENTROIDS, SEMANTIC_GATE_SESSION
+    global IMAGENET_CATEGORIES, ALLOWED_IMAGENET_INDICES, EXPLICIT_OUTSIDE_FOODS
+
     manifest_path = ONNX_DIR / "onnx_manifest.json"
     if manifest_path.exists():
         with open(manifest_path, "r", encoding="utf-8") as f:
@@ -300,6 +318,30 @@ def load_models():
             ORT_SESSIONS[arch] = ort.InferenceSession(
                 str(onnx_file), sess_options=sess_opts, providers=["CPUExecutionProvider"]
             )
+
+    centroids_path = ONNX_DIR / "convnext_centroids.npy"
+    if centroids_path.exists():
+        CONVNEXT_CENTROIDS = np.load(str(centroids_path))
+
+    sem_gate_path = ONNX_DIR / "semantic_gate.onnx"
+    if sem_gate_path.exists():
+        sess_opts = ort.SessionOptions()
+        sess_opts.intra_op_num_threads = 2
+        SEMANTIC_GATE_SESSION = ort.InferenceSession(
+            str(sem_gate_path), sess_options=sess_opts, providers=["CPUExecutionProvider"]
+        )
+
+    cats_path = ONNX_DIR / "imagenet_categories.json"
+    if cats_path.exists():
+        with open(cats_path, "r", encoding="utf-8") as f:
+            IMAGENET_CATEGORIES = json.load(f)
+
+    allowed_path = ONNX_DIR / "allowed_imagenet_indices.json"
+    if allowed_path.exists():
+        with open(allowed_path, "r", encoding="utf-8") as f:
+            meta = json.load(f)
+            ALLOWED_IMAGENET_INDICES = meta.get("allowed_indices", [])
+            EXPLICIT_OUTSIDE_FOODS = set(meta.get("explicit_western_foods", []))
 
 
 @app.on_event("startup")
@@ -338,19 +380,69 @@ def softmax_np(logits: np.ndarray) -> np.ndarray:
 
 
 # Empirically calibrated on splits/test.csv under Label Smoothing (epsilon = 0.1, K = 10):
-# - Ideal in-distribution top-1 probability is ~91.0% (test median = 92.01%, p1 = 80.01%)
+# - Ideal in-distribution top-1 probability is ~91.0% (test median = 92.01%, p5 = 90.88%)
 # - Ideal normalized Shannon entropy H(p)/ln(10) is ~0.217 (test median = 0.20, p95 = 0.22)
-# - Ideal max pre-softmax logit is ~4.16 (test p1 = 3.49)
+# - Ideal max pre-softmax logit is ~4.16 (test p5 = 4.02)
+# - 768-D Feature Centroid Cosine Similarity median = 0.9822 (p5 = 0.9386)
+# - Culinary Domain Mass in ImageNet-1K semantic space median = 93.89%
 OOD_THRESHOLDS = {
-    "min_confidence_pct": 60.0,
-    "min_margin_pct": 35.0,
-    "max_normalized_entropy": 0.52,
-    "min_max_logit": 2.60,
-    "ensemble_split_min_mean_conf_pct": 78.0,
-    "ensemble_split_min_single_conf_pct": 58.0,
-    "ensemble_unanimous_min_mean_conf_pct": 68.0,
-    "ensemble_unanimous_min_single_conf_pct": 50.0,
+    "min_confidence_pct": 78.0,
+    "min_margin_pct": 60.0,
+    "max_normalized_entropy": 0.36,
+    "min_max_logit": 3.35,
+    "min_centroid_cosine_sim": 0.85,
+    "min_culinary_domain_mass_pct": 38.0,
+    "max_non_culinary_top1_pct": 32.0,
+    "max_outside_food_top1_pct": 22.0,
+    "ensemble_split_min_mean_conf_pct": 86.0,
+    "ensemble_split_min_single_conf_pct": 72.0,
+    "ensemble_unanimous_min_mean_conf_pct": 80.0,
+    "ensemble_unanimous_min_single_conf_pct": 68.0,
 }
+
+
+def evaluate_semantic_domain(input_tensor: np.ndarray) -> Dict:
+    """
+    Runs lightweight ImageNet-1K semantic verification (MobileNetV3-Small ONNX)
+    to detect non-food objects (faces, laptops, phones, rooms, animals, vehicles)
+    and explicit non-Nepali foods (pizza, cheeseburger, hotdog, ice cream, fruits).
+    """
+    if SEMANTIC_GATE_SESSION is None or not IMAGENET_CATEGORIES or not ALLOWED_IMAGENET_INDICES:
+        return {
+            "enabled": False,
+            "is_domain_valid": True,
+            "culinary_domain_mass_pct": 100.0,
+            "top_imagenet_label": "unknown",
+            "top_imagenet_conf_pct": 0.0,
+            "domain_rejection_reason": None,
+        }
+
+    sem_logits = SEMANTIC_GATE_SESSION.run(["logits"], {"input": input_tensor})[0][0]
+    sem_probs = softmax_np(sem_logits)
+    top_idx = int(np.argmax(sem_probs))
+    top_label = IMAGENET_CATEGORIES[top_idx]
+    top_conf_pct = round(float(sem_probs[top_idx]) * 100.0, 2)
+    culinary_mass_pct = round(float(np.sum(sem_probs[ALLOWED_IMAGENET_INDICES])) * 100.0, 2)
+
+    reason = None
+    if top_label in EXPLICIT_OUTSIDE_FOODS and top_conf_pct >= OOD_THRESHOLDS["max_outside_food_top1_pct"]:
+        reason = f"Detected Outside Non-Nepali Food ('{top_label}' at {top_conf_pct:.1f}%)"
+    elif top_idx not in ALLOWED_IMAGENET_INDICES and top_conf_pct >= OOD_THRESHOLDS["max_non_culinary_top1_pct"]:
+        reason = f"Detected Non-Nepali / Non-Food Object ('{top_label}' at {top_conf_pct:.1f}%)"
+    elif culinary_mass_pct < OOD_THRESHOLDS["min_culinary_domain_mass_pct"]:
+        reason = (
+            f"Outside Culinary Domain (Culinary Mass {culinary_mass_pct:.1f}% < "
+            f"{OOD_THRESHOLDS['min_culinary_domain_mass_pct']:.0f}%, Top Concept: '{top_label}')"
+        )
+
+    return {
+        "enabled": True,
+        "is_domain_valid": reason is None,
+        "culinary_domain_mass_pct": culinary_mass_pct,
+        "top_imagenet_label": top_label,
+        "top_imagenet_conf_pct": top_conf_pct,
+        "domain_rejection_reason": reason,
+    }
 
 
 def run_single_model_inference(arch: str, input_tensor: np.ndarray) -> Dict:
@@ -360,8 +452,15 @@ def run_single_model_inference(arch: str, input_tensor: np.ndarray) -> Dict:
         raise HTTPException(status_code=503, detail=f"ONNX model '{arch}' is not loaded yet.")
 
     sess = ORT_SESSIONS[arch]
+    output_names = [o.name for o in sess.get_outputs()]
+    has_feat = arch == "convnext_tiny" and CONVNEXT_FEAT_NODE in output_names and CONVNEXT_CENTROIDS is not None
+
     t0 = time.perf_counter()
-    logits_batch = sess.run(["logits"], {"input": input_tensor})[0]
+    if has_feat:
+        logits_batch, feat_batch = sess.run(["logits", CONVNEXT_FEAT_NODE], {"input": input_tensor})
+    else:
+        logits_batch = sess.run(["logits"], {"input": input_tensor})[0]
+        feat_batch = None
     latency_ms = (time.perf_counter() - t0) * 1000.0
 
     raw_logits = logits_batch[0]
@@ -382,11 +481,19 @@ def run_single_model_inference(arch: str, input_tensor: np.ndarray) -> Dict:
     shifted_l = raw_logits - np.max(raw_logits)
     energy_score = round(float(-(np.max(raw_logits) + np.log(np.sum(np.exp(shifted_l))))), 3)
 
+    centroid_cos_sim = None
+    if feat_batch is not None and CONVNEXT_CENTROIDS is not None:
+        v = feat_batch[0]
+        v_norm = v / (np.linalg.norm(v) + 1e-12)
+        pred_idx = int(top_indices[0])
+        centroid_cos_sim = round(float(np.dot(v_norm, CONVNEXT_CENTROIDS[pred_idx])), 4)
+
     model_is_ood = (
         confidence_pct < OOD_THRESHOLDS["min_confidence_pct"]
         or margin_pct < OOD_THRESHOLDS["min_margin_pct"]
         or norm_entropy > OOD_THRESHOLDS["max_normalized_entropy"]
         or max_logit < OOD_THRESHOLDS["min_max_logit"]
+        or (centroid_cos_sim is not None and centroid_cos_sim < OOD_THRESHOLDS["min_centroid_cosine_sim"])
     )
 
     top_predictions = []
@@ -425,21 +532,38 @@ def run_single_model_inference(arch: str, input_tensor: np.ndarray) -> Dict:
         "normalized_entropy": norm_entropy,
         "max_logit": max_logit,
         "energy_score": energy_score,
+        "centroid_cosine_sim": centroid_cos_sim,
         "is_ood": bool(model_is_ood),
         "top3": top_predictions,
         "all_probabilities": all_probs
     }
 
 
-def evaluate_ood_gate(results: List[Dict]) -> Dict:
+def evaluate_ood_gate(results: List[Dict], input_tensor: Optional[np.ndarray] = None) -> Dict:
     """
-    Multi-Signal Out-of-Distribution (OOD) / Open-Set Rejection Gate.
-    Combines Label-Smoothed Softmax Confidence, Top-1/Top-2 Margin,
-    Normalized Shannon Entropy, Pre-Softmax Logit Magnitude/Energy,
-    and Cross-Architecture (CNN vs. Swin-ViT) Consensus.
+    3-Layer Multi-Signal Out-of-Distribution (OOD) / Open-Set Rejection Gate:
+      Layer 1: Pretrained ImageNet-1K Semantic Domain Filter (catches non-food objects & outside Western foods)
+      Layer 2: 768-D Penultimate Feature Prototype Cosine Similarity (Deep Nearest-Class-Mean in ConvNeXt-Tiny)
+      Layer 3: Label-Smoothed Softmax Confidence, Top-1/Top-2 Margin, Normalized Shannon Entropy,
+               Pre-Softmax Logit Energy, and Cross-Architecture (CNN vs. Swin-ViT) Consensus.
     """
     primary = results[0]
     reasons: List[str] = []
+
+    sem_info = (
+        evaluate_semantic_domain(input_tensor)
+        if input_tensor is not None
+        else {"enabled": False, "is_domain_valid": True, "culinary_domain_mass_pct": 100.0}
+    )
+    if sem_info.get("domain_rejection_reason"):
+        reasons.append(sem_info["domain_rejection_reason"])
+
+    if primary.get("centroid_cosine_sim") is not None and (
+        primary["centroid_cosine_sim"] < OOD_THRESHOLDS["min_centroid_cosine_sim"]
+    ):
+        reasons.append(
+            f"Low 768-D Feature Centroid Similarity ({primary['centroid_cosine_sim']:.2f} < {OOD_THRESHOLDS['min_centroid_cosine_sim']:.2f})"
+        )
 
     if primary["confidence"] < OOD_THRESHOLDS["min_confidence_pct"]:
         reasons.append(
@@ -491,9 +615,9 @@ def evaluate_ood_gate(results: List[Dict]) -> Dict:
         )
     else:
         summary_msg = (
-            f"This image does not confidently match any of the 10 trained Nepali food categories "
-            f"({supported_list}). Closest visual fallback was {primary['predicted_name']} "
-            f"at {primary['confidence']:.1f}% confidence, but the Open-Set OOD Gate rejected it."
+            f"This image does not match any of the 10 trained Nepali food categories "
+            f"({supported_list}). Closest closed-set softmax fallback was {primary['predicted_name']} "
+            f"({primary['confidence']:.1f}%), rejected by the 3-Layer Open-Set OOD Gate."
         )
 
     return {
@@ -504,12 +628,15 @@ def evaluate_ood_gate(results: List[Dict]) -> Dict:
         "summary_nepali": primary["predicted_nepali"] if is_recognized else "अज्ञात परिकार",
         "summary_message": summary_msg,
         "reasons": reasons,
+        "semantic_domain": sem_info,
         "metrics": {
             "primary_confidence": primary["confidence"],
             "primary_margin": primary["margin"],
             "primary_normalized_entropy": primary["normalized_entropy"],
             "primary_max_logit": primary["max_logit"],
             "primary_energy_score": primary["energy_score"],
+            "primary_centroid_cosine_sim": primary.get("centroid_cosine_sim"),
+            "culinary_domain_mass_pct": sem_info.get("culinary_domain_mass_pct"),
             "ensemble_mean_confidence": round(mean_conf, 2),
             "ensemble_min_confidence": round(min_conf, 2),
             "distinct_predictions_count": distinct_preds,
@@ -638,7 +765,7 @@ async def predict_image(
     dish_info = DISH_CATALOG[primary["predicted_class"]]
     predicted_classes = [r["predicted_class"] for r in results]
     unanimous = len(set(predicted_classes)) == 1
-    ood_gate = evaluate_ood_gate(results)
+    ood_gate = evaluate_ood_gate(results, input_tensor)
 
     return {
         "mode": model_choice,
