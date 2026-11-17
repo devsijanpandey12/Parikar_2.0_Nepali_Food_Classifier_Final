@@ -77,21 +77,6 @@ if (toggleMatrixDrawerBtn && matrixDrawerContent) {
   });
 }
 
-// Inertial Floating Smooth Scroll (Lenis)
-if (typeof window.Lenis !== "undefined") {
-  const lenis = new window.Lenis({
-    duration: 1.15,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    smoothWheel: true,
-    wheelMultiplier: 0.95
-  });
-  function raf(time) {
-    lenis.raf(time);
-    requestAnimationFrame(raf);
-  }
-  requestAnimationFrame(raf);
-}
-
 const MODEL_HINTS = {
   all: "Running all 3 architectures head-to-head",
   convnext_tiny: "Single model: ConvNeXt-Tiny (27.8M · 99.49% Test Top-1)",

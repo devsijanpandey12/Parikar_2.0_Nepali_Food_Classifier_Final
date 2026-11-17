@@ -1070,19 +1070,24 @@ body {
 }
 
 /* TELEMETRY CARDS & REFINED METRIC CHIPS */
+.full-span-panel {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
 .telemetry-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.35rem;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
 .model-cards-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
-  gap: 1.1rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
 }
 
 .model-run-card {
@@ -1578,7 +1583,8 @@ body {
   }
   .hero-inner,
   .studio-grid,
-  .arch-showcase-grid {
+  .arch-showcase-grid,
+  .model-cards-container {
     grid-template-columns: 1fr;
   }
   .steps-row,

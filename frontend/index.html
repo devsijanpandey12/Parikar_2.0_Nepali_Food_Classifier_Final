@@ -101,7 +101,6 @@
         <p class="section-sub">Tap any unseen test photo below to run instant detection</p>
       </div>
       <div class="samples-header-right">
-        <button type="button" class="btn btn-ghost btn-sm" id="shuffleSamplesBtn">↻ Shuffle Sample Photos</button>
         <span class="badge-mono">10 Categories · Held-Out Test Set</span>
       </div>
     </div>
@@ -282,22 +281,22 @@
 
           <div class="flavor-tags-row" id="dishFlavorTags"></div>
         </article>
-
-        <!-- LIVE MODEL HEAD-TO-HEAD TELEMETRY -->
-        <section class="glass-card telemetry-panel reveal-up">
-          <div class="telemetry-header">
-            <div>
-              <span class="step-badge">STEP 02</span>
-              <h3>Model Confidence &amp; Latency Comparison</h3>
-            </div>
-            <span class="badge-mono" id="totalInferenceTime">ONNX CPU Engine</span>
-          </div>
-
-          <div class="model-cards-container" id="modelResultsContainer">
-            <!-- Populated dynamically when inference runs -->
-          </div>
-        </section>
       </div>
+
+      <!-- STEP 02: FULL-SCREEN WIDTH MODEL HEAD-TO-HEAD TELEMETRY -->
+      <section class="glass-card telemetry-panel full-span-panel reveal-up">
+        <div class="telemetry-header">
+          <div>
+            <span class="step-badge">STEP 02</span>
+            <h3>Model Confidence &amp; Latency Comparison</h3>
+          </div>
+          <span class="badge-mono" id="totalInferenceTime">ONNX CPU Engine</span>
+        </div>
+
+        <div class="model-cards-container" id="modelResultsContainer">
+          <!-- Populated dynamically when inference runs -->
+        </div>
+      </section>
     </div>
   </main>
 
@@ -459,7 +458,6 @@
     </div>
   </footer>
 
-  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
