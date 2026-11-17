@@ -225,7 +225,7 @@
         <h3 class="sub-headline">Held-Out Test Set Performance &amp; Imbalance Engineering</h3>
         <p class="sub-copy">
           Prior to splitting, all 10,025 files were hashed with MD5, purging <strong>121 exact byte-for-byte duplicates</strong> so zero identical images leaked between train (7,924), validation (990), and test (990).
-          The 6.5:1 class imbalance between <em>momo</em> (2,219) and <em>chatpate</em> (342) was solved via <strong>smoothed inverse square-root sampling</strong> ($\sqrt{\bar{N}/N_c}$) and label smoothing ($\epsilon = 0.1$, mathematical loss floor $0.5004$).
+          The 6.5:1 class imbalance between <em>momo</em> (2,219) and <em>chatpate</em> (342) was solved via <strong>smoothed inverse square-root sampling</strong> (<code class="math-inline">w<sub>c</sub> = &radic;(N&#772; / N<sub>c</sub>)</code>) and label smoothing (<code class="math-inline">&epsilon; = 0.1</code>, theoretical loss floor <code class="math-inline">0.5004</code>).
         </p>
 
         <table class="editorial-table">

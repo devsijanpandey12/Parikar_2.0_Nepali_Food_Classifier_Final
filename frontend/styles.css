@@ -812,6 +812,16 @@ body {
   max-width: 72ch;
 }
 
+.math-inline {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--paper-muted);
+  color: var(--ink);
+  padding: 0.1rem 0.38rem;
+  border: 1px solid #C5BEB0;
+}
+
 .editorial-table {
   width: 100%;
   border-collapse: collapse;
