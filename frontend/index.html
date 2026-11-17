@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parikar 2.0 — Nepali Culinary Vision Lab | By Sijan Pandey</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- TOP EDITORIAL MASTHEAD -->
+  <header class="masthead">
+    <div class="masthead-top">
+      <div class="masthead-cell brand-meta">
+        <span class="mono-label">ARCHIVE REF // NPK-10-CV</span>
+        <span class="dot-sep">·</span>
+        <span class="mono-label">9,904 VERIFIED SPECIMENS</span>
+      </div>
+      <div class="masthead-cell author-credit">
+        <span class="mono-label">ENGINEERED &amp; CURATED BY</span>
+        <strong class="author-name">SIJAN PANDEY</strong>
+      </div>
+      <div class="masthead-cell engine-status">
+        <span class="status-dot" id="engineStatusDot"></span>
+        <span class="mono-label" id="engineStatusText">ONNX RUNTIME // READY</span>
+        <a href="https://github.com/devsijanpandey12/Parikar_2.0_Nepali_Food_Classifier_Final" target="_blank" rel="noopener" class="repo-link">GITHUB REPO ↗</a>
+      </div>
+    </div>
+
+    <div class="masthead-hero">
+      <div class="hero-title-block">
+        <p class="kicker">HIMALAYAN GASTRONOMY &amp; COMPUTER VISION BENCHMARK</p>
+        <h1 class="display-title">Parikar <em>2.0</em> <span class="devanagari-title">परिकार</span></h1>
+      </div>
+      <div class="hero-summary-block">
+        <p class="editorial-lead">
+          An empirical benchmark and real-time classification studio for ten iconic Nepali dishes and beverages.
+          Powered by two-stage transfer learning across <strong>ConvNeXt-Tiny</strong>, <strong>EfficientNetV2-S</strong>, and <strong>Swin-Tiny</strong>.
+        </p>
+        <div class="quick-stats-strip">
+          <div class="stat-chip">
+            <span class="stat-num">99.49%</span>
+            <span class="stat-lbl">BEST TEST TOP-1</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-num">99.51%</span>
+            <span class="stat-lbl">MACRO F1-SCORE</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-num">121</span>
+            <span class="stat-lbl">MD5 DUPLICATES PURGED</span>
+          </div>
+          <div class="stat-chip">
+            <span class="stat-num">~19 ms</span>
+            <span class="stat-lbl">ONNX CPU LATENCY</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN SPLIT WORKBENCH -->
+  <main class="workbench-grid">
+    <!-- LEFT COLUMN: INPUT & MODEL CONTROLS -->
+    <section class="pane input-pane">
+      <div class="pane-header">
+        <span class="section-index">01 // SPECIMEN INPUT &amp; MODEL SELECTOR</span>
+        <span class="mono-tag">224×224 RGB TENSOR</span>
+      </div>
+
+      <!-- MODEL TOGGLE BAR -->
+      <div class="control-block">
+        <div class="control-label-row">
+          <label class="mono-label">SELECT INFERENCE ARCHITECTURE</label>
+          <span class="mono-hint" id="selectedModelHint">Running all 3 architectures head-to-head</span>
+        </div>
+        <div class="model-toggle-group" role="radiogroup" aria-label="Model Architecture Selector">
+          <button type="button" class="model-toggle active" data-model="all">
+            <span class="toggle-title">Compare All 3</span>
+            <span class="toggle-sub">Head-to-Head</span>
+          </button>
+          <button type="button" class="model-toggle" data-model="convnext_tiny">
+            <span class="toggle-title">ConvNeXt-Tiny</span>
+            <span class="toggle-sub">27.8M · 99.49%</span>
+          </button>
+          <button type="button" class="model-toggle" data-model="efficientnet_v2_s">
+            <span class="toggle-title">EfficientNetV2-S</span>
+            <span class="toggle-sub">20.2M · 99.39%</span>
+          </button>
+          <button type="button" class="model-toggle" data-model="swin_t">
+            <span class="toggle-title">Swin-Tiny</span>
+            <span class="toggle-sub">27.5M · 97.88%</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- INPUT SOURCE TABS: UPLOAD vs CAMERA -->
+      <div class="control-block">
+        <div class="source-tabs">
+          <button type="button" class="source-tab active" id="tabUploadBtn">UPLOAD PHOTO</button>
+          <button type="button" class="source-tab" id="tabCameraBtn">LIVE CAMERA</button>
+        </div>
+
+        <!-- UPLOAD VIEW -->
+        <div class="source-view" id="uploadView">
+          <div class="dropzone" id="dropzone">
+            <input type="file" id="fileInput" accept="image/*" hidden />
+            <div class="preview-wrapper" id="previewWrapper">
+              <img id="imagePreview" alt="Selected Nepali food specimen" />
+              <div class="preview-overlay">
+                <button type="button" class="editorial-btn secondary-btn" id="changePhotoBtn">CHANGE IMAGE</button>
+              </div>
+            </div>
+            <div class="dropzone-prompt" id="dropzonePrompt">
+              <div class="crosshair-icon">+</div>
+              <p class="prompt-primary">Drop a food photograph here or <u>browse files</u></p>
+              <p class="prompt-sub">Supports JPG, PNG, WEBP · Center-cropped to 224×224</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- CAMERA VIEW -->
+        <div class="source-view hidden" id="cameraView">
+          <div class="camera-stage">
+            <video id="cameraVideo" autoplay playsinline muted></video>
+            <canvas id="cameraCanvas" hidden></canvas>
+            <div class="camera-Idle" id="cameraIdlePrompt">
+              <p>Use your webcam or phone camera to snap a live dish photo.</p>
+              <button type="button" class="editorial-btn primary-btn" id="startCameraBtn">OPEN CAMERA</button>
+            </div>
+          </div>
+          <div class="camera-controls hidden" id="cameraControlsBar">
+            <button type="button" class="editorial-btn primary-btn" id="capturePhotoBtn">CAPTURE &amp; DETECT</button>
+            <button type="button" class="editorial-btn secondary-btn" id="stopCameraBtn">CLOSE CAMERA</button>
+          </div>
+        </div>
+
+        <!-- DETECT ACTION BAR -->
+        <div class="action-bar">
+          <button type="button" class="editorial-btn primary-btn full-width" id="runInferenceBtn">
+            RUN CLASSIFICATION PIPELINE →
+          </button>
+        </div>
+      </div>
+
+      <!-- HELD-OUT TEST SET SPECIMEN STRIP -->
+      <div class="control-block specimen-strip-block">
+        <div class="control-label-row">
+          <label class="mono-label">OR TEST AN UNSEEN HELD-OUT SPECIMEN (1 CLICK)</label>
+          <span class="mono-hint">From splits/test.csv</span>
+        </div>
+        <div class="specimen-grid" id="specimenGrid">
+          <!-- Populated dynamically from /api/samples -->
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT COLUMN: LIVE TELEMETRY & CULINARY FIELD CARD -->
+    <section class="pane output-pane">
+      <div class="pane-header">
+        <span class="section-index">02 // CULINARY DOSSIER &amp; MODEL TELEMETRY</span>
+        <span class="mono-tag" id="consensusBadge">AWAITING SPECIMEN</span>
+      </div>
+
+      <!-- CULINARY FIELD NOTE CARD -->
+      <article class="culinary-card" id="culinaryCard">
+        <div class="dish-header-row">
+          <div>
+            <span class="dish-category-stamp" id="dishCategory">SELECT OR UPLOAD A DISH</span>
+            <div class="dish-title-line">
+              <h2 class="dish-name" id="dishName">Awaiting Specimen</h2>
+              <span class="dish-nepali" id="dishNepali">परिकार</span>
+            </div>
+          </div>
+          <div class="primary-confidence-box">
+            <span class="mono-label" id="primaryModelLabel">PRIMARY MODEL</span>
+            <span class="confidence-giant" id="primaryConfidence">—%</span>
+            <span class="latency-sub" id="primaryLatency">— ms</span>
+          </div>
+        </div>
+
+        <p class="dish-tagline" id="dishTagline">
+          Click any of the 10 test specimens on the left, upload an image, or capture a frame from your camera to inspect model predictions and culinary notes.
+        </p>
+
+        <div class="dish-details-grid">
+          <div class="detail-column">
+            <h3 class="detail-heading">HOW IT'S PREPARED</h3>
+            <p class="detail-body" id="dishPreparation">—</p>
+          </div>
+          <div class="detail-column">
+            <h3 class="detail-heading">WHAT MAKES IT SPECIAL</h3>
+            <p class="detail-body" id="dishSpecialty">—</p>
+          </div>
+        </div>
+
+        <div class="flavor-tags-row" id="dishFlavorTags"></div>
+      </article>
+
+      <!-- MODEL HEAD-TO-HEAD COMPARISON & LATENCY TELEMETRY -->
+      <div class="telemetry-section">
+        <div class="telemetry-header">
+          <span class="mono-label">ARCHITECTURE HEAD-TO-HEAD &amp; LATENCY TELEMETRY</span>
+          <span class="mono-hint" id="totalInferenceTime">CPU Execution Provider (ONNX)</span>
+        </div>
+
+        <div class="model-cards-container" id="modelResultsContainer">
+          <!-- Populated dynamically when inference runs -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- SECTION 03: EMPIRICAL BENCHMARK & ENGINEERING LOG -->
+  <section class="benchmark-dossier">
+    <div class="pane-header">
+      <span class="section-index">03 // EMPIRICAL 3-MODEL BENCHMARK &amp; CONFUSION MATRICES (990 UNSEEN TEST IMAGES)</span>
+      <span class="mono-tag">NVIDIA RTX 4050 · BFLOAT16 TRANSFER LEARNING</span>
+    </div>
+
+    <div class="benchmark-grid">
+      <div class="benchmark-table-wrap">
+        <h3 class="sub-headline">Held-Out Test Set Performance &amp; Imbalance Engineering</h3>
+        <p class="sub-copy">
+          Prior to splitting, all 10,025 files were hashed with MD5, purging <strong>121 exact byte-for-byte duplicates</strong> so zero identical images leaked between train (7,924), validation (990), and test (990).
+          The 6.5:1 class imbalance between <em>momo</em> (2,219) and <em>chatpate</em> (342) was solved via <strong>smoothed inverse square-root sampling</strong> ($\sqrt{\bar{N}/N_c}$) and label smoothing ($\epsilon = 0.1$, mathematical loss floor $0.5004$).
+        </p>
+
+        <table class="editorial-table">
+          <thead>
+            <tr>
+              <th>Architecture</th>
+              <th>Family</th>
+              <th>Params</th>
+              <th>Best Ep</th>
+              <th>Val Macro-F1</th>
+              <th>Test Top-1</th>
+              <th>Test Top-3</th>
+              <th>Balanced Acc</th>
+              <th>Test Macro-F1</th>
+              <th>Chatpate F1</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="winner-row">
+              <td><strong>ConvNeXt-Tiny</strong> <span class="row-badge">WINNER</span></td>
+              <td>7×7 Depthwise CNN</td>
+              <td>27.8M</td>
+              <td>6 / 6</td>
+              <td>99.12%</td>
+              <td><strong>99.49%</strong></td>
+              <td>99.90%</td>
+              <td><strong>99.51%</strong></td>
+              <td><strong>99.51%</strong></td>
+              <td><strong>100.0%</strong></td>
+            </tr>
+            <tr>
+              <td><strong>EfficientNetV2-S</strong></td>
+              <td>Fused-MBConv CNN</td>
+              <td><strong>20.2M</strong></td>
+              <td>5 / 6</td>
+              <td>99.01%</td>
+              <td>99.39%</td>
+              <td><strong>100.00%</strong></td>
+              <td>99.32%</td>
+              <td>99.24%</td>
+              <td>98.55%</td>
+            </tr>
+            <tr>
+              <td><strong>Swin-Tiny</strong></td>
+              <td>Shifted-Window ViT</td>
+              <td>27.5M</td>
+              <td>3 / 6</td>
+              <td>98.57%</td>
+              <td>97.88%</td>
+              <td>99.90%</td>
+              <td>98.04%</td>
+              <td>97.98%</td>
+              <td><strong>100.0%</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="matrix-viewer-wrap">
+        <div class="matrix-tabs">
+          <button type="button" class="matrix-tab active" data-img="/experiments/model_comparison_benchmark.png">Benchmark Chart</button>
+          <button type="button" class="matrix-tab" data-img="/experiments/convnext_tiny/test_confusion_matrix.png">ConvNeXt Matrix</button>
+          <button type="button" class="matrix-tab" data-img="/experiments/efficientnet_v2_s/test_confusion_matrix.png">EfficientNetV2 Matrix</button>
+          <button type="button" class="matrix-tab" data-img="/experiments/swin_t/test_confusion_matrix.png">Swin-Tiny Matrix</button>
+        </div>
+        <div class="matrix-frame">
+          <img id="matrixViewerImg" src="/experiments/model_comparison_benchmark.png" alt="Model Benchmark Visualization" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="editorial-footer">
+    <div>
+      <span class="mono-label">PARIKAR 2.0 — NEPALI FOOD &amp; BEVERAGE CLASSIFICATION SYSTEM</span>
+    </div>
+    <div>
+      <span class="mono-label">CREATED BY <strong>SIJAN PANDEY</strong> · DEPLOYED WITH ONNX RUNTIME &amp; FASTAPI</span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -240,4 +240,9 @@ Unlike rigid objects (cars, airplanes, buildings) that have fixed geometric silh
 - **[2026-11-17]** Trained & evaluated Model 2 (`efficientnet_v2_s`) for 6 epochs on RTX 4050 GPU: peaked at Epoch 5 with **`98.99%` Val Top-1 (`99.01%` Val Macro-F1)** and achieved **`99.39%` Test Top-1, `100.00%` Test Top-3, `99.24%` Test Macro-F1, and `18.70 ms/img` latency**.
 - **[2026-11-17]** Trained & evaluated Model 3 (`swin_t`) for 6 epochs on RTX 4050 GPU: peaked at Epoch 3 with **`98.69%` Val Top-1 (`98.57%` Val Macro-F1)** and achieved **`97.88%` Test Top-1 (`97.98%` Test Macro-F1)**, empirically confirming that convolutional inductive bias (`ConvNeXt-Tiny` / `EfficientNetV2-S`) outperforms self-attention on fine-grained food textures (`momo` vs. `samosa` vs. `yomari`) at the `10k`-image scale.
 - **[2026-11-17]** Generated side-by-side benchmark visualization (`experiments/model_comparison_benchmark.png`).
+- **[2026-11-17]** Exported all 3 models to ONNX Runtime (`src/export_onnx.py` $\to$ `models_onnx/onnx_manifest.json`) and verified numerical equivalence (`max_diff <= 1.13e-6` vs. PyTorch):
+  - `convnext_tiny.onnx`: `106.24 MB` | CPU Latency: **`27.01 ms`**
+  - `efficientnet_v2_s.onnx`: `76.87 MB` | CPU Latency: **`18.45 ms`**
+  - `swin_t.onnx`: `107.29 MB` | CPU Latency: **`35.75 ms`**
+- **[2026-11-17]** Built FastAPI multi-model inference backend (`backend/app.py`), Azure `Dockerfile`, and bespoke archival/editorial web interface (`frontend/index.html`, `frontend/styles.css`, `frontend/app.js`) featuring live camera capture, 1-click test specimen strip, single/all-3 model toggles, live latency telemetry, and cultural culinary cards, credited to **Sijan Pandey**.
 
