@@ -1,0 +1,231 @@
+{
+  "total_scanned": 10025,
+  "total_unique_valid": 9904,
+  "corrupted_count": 0,
+  "exact_duplicate_count": 121,
+  "corrupted_files": [],
+  "exact_duplicates_sample": [
+    {
+      "duplicate": "chatpate/000054.jpg",
+      "original": "chatpate/000043.jpg",
+      "class": "chatpate"
+    },
+    {
+      "duplicate": "chiya/chiya_0051.jpg",
+      "original": "chiya/chiya_0001.jpg",
+      "class": "chiya"
+    },
+    {
+      "duplicate": "chiya/chiya_0056.jpg",
+      "original": "chiya/chiya_0000.jpg",
+      "class": "chiya"
+    },
+    {
+      "duplicate": "chiya/chiya_0069.jpg",
+      "original": "chiya/chiya_0008.jpg",
+      "class": "chiya"
+    },
+    {
+      "duplicate": "chiya/chiya_0087.jpg",
+      "original": "chiya/chiya_0017.jpg",
+      "class": "chiya"
+    },
+    {
+      "duplicate": "chiya/tea (331).jpg",
+      "original": "chiya/tea (318).jpg",
+      "class": "chiya"
+    },
+    {
+      "duplicate": "dalbhat/dalbhat_0132.jpg",
+      "original": "dalbhat/dalbhat_0102.jpg",
+      "class": "dalbhat"
+    },
+    {
+      "duplicate": "dalbhat/dalbhat_0158.jpg",
+      "original": "dalbhat/dalbhat_0097.jpg",
+      "class": "dalbhat"
+    },
+    {
+      "duplicate": "jeri/jeri (222).jpg",
+      "original": "jeri/jeri (112).jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri (288).jpg",
+      "original": "jeri/jeri (27).JPG",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri (88).jpg",
+      "original": "jeri/jeri (55).jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0030.jpg",
+      "original": "jeri/jeri_0025.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0032.jpg",
+      "original": "jeri/jeri_0000.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0033.jpg",
+      "original": "jeri/jeri_0024.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0036.jpg",
+      "original": "jeri/jeri_0028.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0037.jpg",
+      "original": "jeri/jeri_0012.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0038.jpg",
+      "original": "jeri/jeri_0026.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0041.jpg",
+      "original": "jeri/jeri_0009.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0053.jpg",
+      "original": "jeri/jeri_0006.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0055.jpg",
+      "original": "jeri/jeri_0007.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0056.jpg",
+      "original": "jeri/jeri_0027.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0057.jpg",
+      "original": "jeri/jeri_0029.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0058.jpg",
+      "original": "jeri/jeri_0019.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0060.jpg",
+      "original": "jeri/jeri_0019.jpg",
+      "class": "jeri"
+    },
+    {
+      "duplicate": "jeri/jeri_0121.jpg",
+      "original": "jeri/jeri_0116.jpg",
+      "class": "jeri"
+    }
+  ],
+  "splits": {
+    "train": 7924,
+    "val": 990,
+    "test": 990
+  },
+  "classes": {
+    "chatpate": {
+      "label": 0,
+      "total_unique": 342,
+      "train": 274,
+      "val": 34,
+      "test": 34,
+      "inverse_weight": 2.892,
+      "smoothed_sqrt_weight": 1.7006
+    },
+    "chiya": {
+      "label": 1,
+      "total_unique": 1093,
+      "train": 874,
+      "val": 109,
+      "test": 110,
+      "inverse_weight": 0.9066,
+      "smoothed_sqrt_weight": 0.9522
+    },
+    "dalbhat": {
+      "label": 2,
+      "total_unique": 612,
+      "train": 490,
+      "val": 61,
+      "test": 61,
+      "inverse_weight": 1.6171,
+      "smoothed_sqrt_weight": 1.2717
+    },
+    "jeri": {
+      "label": 3,
+      "total_unique": 1219,
+      "train": 975,
+      "val": 122,
+      "test": 122,
+      "inverse_weight": 0.8127,
+      "smoothed_sqrt_weight": 0.9015
+    },
+    "momo": {
+      "label": 4,
+      "total_unique": 2219,
+      "train": 1775,
+      "val": 222,
+      "test": 222,
+      "inverse_weight": 0.4464,
+      "smoothed_sqrt_weight": 0.6681
+    },
+    "pakauda": {
+      "label": 5,
+      "total_unique": 800,
+      "train": 640,
+      "val": 80,
+      "test": 80,
+      "inverse_weight": 1.2381,
+      "smoothed_sqrt_weight": 1.1127
+    },
+    "panipuri": {
+      "label": 6,
+      "total_unique": 863,
+      "train": 690,
+      "val": 86,
+      "test": 87,
+      "inverse_weight": 1.1484,
+      "smoothed_sqrt_weight": 1.0716
+    },
+    "samosa": {
+      "label": 7,
+      "total_unique": 1287,
+      "train": 1030,
+      "val": 129,
+      "test": 128,
+      "inverse_weight": 0.7693,
+      "smoothed_sqrt_weight": 0.8771
+    },
+    "selroti": {
+      "label": 8,
+      "total_unique": 1047,
+      "train": 838,
+      "val": 105,
+      "test": 104,
+      "inverse_weight": 0.9456,
+      "smoothed_sqrt_weight": 0.9724
+    },
+    "yomari": {
+      "label": 9,
+      "total_unique": 422,
+      "train": 338,
+      "val": 42,
+      "test": 42,
+      "inverse_weight": 2.3444,
+      "smoothed_sqrt_weight": 1.5311
+    }
+  }
+}
