@@ -310,66 +310,119 @@ function renderPredictionOutput(data) {
   const primary = data.primary_prediction;
   const dish = data.dish_profile;
   const runs = data.model_runs || [];
-
-  // Consensus badge
-  if (runs.length > 1) {
-    if (data.unanimous_agreement) {
-      consensusBadge.textContent = `${runs.length}/${runs.length} Models Agree`;
-    } else {
-      consensusBadge.textContent = "Split Verdict Across Models";
-    }
-  } else {
-    consensusBadge.textContent = `${primary.title}`;
-  }
+  const ood = data.ood_gate || { is_recognized: true, reasons: [] };
+  const isRecognized = data.is_recognized !== false && ood.is_recognized !== false;
+  const culinaryCardEl = document.getElementById("culinaryCard");
+  const compactBarRight = document.querySelector(".compact-bar-Right");
 
   // Update floating dish image beside dish title
   if (currentPreviewSrc) {
     floatingDishImg.src = currentPreviewSrc;
   }
 
-  // Culinary Spotlight Card
-  dishCategory.textContent = dish.category;
-  dishName.textContent = dish.name;
-  dishNepali.textContent = dish.nepali;
-  primaryModelLabel.textContent = `${primary.title} CONFIDENCE`;
-  animateNumber(primaryConfidence, primary.confidence, "%", 460);
-  primaryLatency.textContent = `${primary.latency_ms.toFixed(1)} ms`;
+  if (!isRecognized) {
+    // OUT-OF-DISTRIBUTION / UNRECOGNIZED DISH OR OBJECT STATE
+    if (culinaryCardEl) culinaryCardEl.classList.add("ood-rejected");
+    consensusBadge.classList.add("ood-badge");
+    consensusBadge.textContent = "⚠️ Unrecognized / Outside 10 Classes";
 
-  dishTagline.textContent = dish.tagline;
+    dishCategory.textContent = "OUT-OF-DISTRIBUTION · OPEN-SET GATE TRIGGERED";
+    dishName.textContent = ood.summary_title || "Unrecognized Dish or Object";
+    dishNepali.textContent = ood.summary_nepali || "अज्ञात परिकार";
+    primaryModelLabel.textContent = `${primary.title} CLOSEST FALLBACK`;
+    animateNumber(primaryConfidence, primary.confidence, "%", 460);
+    primaryLatency.textContent = `${primary.latency_ms.toFixed(1)} ms`;
+    dishTagline.textContent =
+      ood.summary_message ||
+      `This photo does not confidently match any of the 10 trained Nepali dishes. Closest visual fallback was ${primary.predicted_name} (${primary.confidence.toFixed(1)}%).`;
 
-  // Quick Facts 4-tile grid
-  const qf = dish.quick_facts || {};
-  factTaste.textContent = qf.taste || "—";
-  factMethod.textContent = qf.method || "—";
-  factPairing.textContent = qf.pairing || "—";
-  factVibe.textContent = qf.vibe || "—";
+    // Collapse dish prep drawer and hide recipe/Google Maps buttons for unrecognized objects
+    if (dishCollapsibleBody) dishCollapsibleBody.classList.remove("open");
+    if (toggleDishDetailsBtn) {
+      toggleDishDetailsBtn.classList.remove("open");
+      toggleDishDetailsBtn.setAttribute("aria-expanded", "false");
+    }
+    if (toggleDishDetailsText) {
+      toggleDishDetailsText.textContent = "📖 Dish Info & Prep";
+    }
+    if (compactBarRight) compactBarRight.classList.add("hidden");
 
-  // 3 Numbered Recipe Steps
-  dishStepsRow.innerHTML = "";
-  (dish.steps || []).forEach((stepText, idx) => {
-    const stepEl = document.createElement("div");
-    stepEl.className = "step-card";
-    stepEl.innerHTML = `
-      <span class="step-num">STEP 0${idx + 1}</span>
-      <p>${stepText}</p>
-    `;
-    dishStepsRow.appendChild(stepEl);
-  });
+    // Render OOD diagnostic reason pills + entropy/logit telemetry pill
+    dishFlavorTags.innerHTML = "";
+    (ood.reasons || []).forEach((reason) => {
+      const span = document.createElement("span");
+      span.className = "flavor-tag ood-reason-tag";
+      span.textContent = `⚠️ ${reason}`;
+      dishFlavorTags.appendChild(span);
+    });
 
-  dishSpecialty.textContent = dish.specialty || "—";
+    if (typeof primary.normalized_entropy === "number") {
+      const metricSpan = document.createElement("span");
+      metricSpan.className = "flavor-tag ood-metric-tag";
+      metricSpan.textContent = `Entropy H: ${primary.normalized_entropy.toFixed(2)} · Margin: ${primary.margin.toFixed(1)}% · Max Logit: ${primary.max_logit.toFixed(2)}`;
+      dishFlavorTags.appendChild(metricSpan);
+    }
+  } else {
+    // IN-DISTRIBUTION / RECOGNIZED NEPALI DISH STATE
+    if (culinaryCardEl) culinaryCardEl.classList.remove("ood-rejected");
+    consensusBadge.classList.remove("ood-badge");
+    if (compactBarRight) compactBarRight.classList.remove("hidden");
 
-  // Update Google Maps "Where Can I Get It?" link
-  const mapQuery = encodeURIComponent(`Nepali ${dish.name} restaurant near me`);
-  findNearMeBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
-  findNearMeBtn.textContent = `📍 Find ${dish.name} Near Me ↗`;
+    // Consensus badge
+    if (runs.length > 1) {
+      if (data.unanimous_agreement) {
+        consensusBadge.textContent = `${runs.length}/${runs.length} Models Agree`;
+      } else {
+        consensusBadge.textContent = "2/3 Majority Consensus";
+      }
+    } else {
+      consensusBadge.textContent = `${primary.title}`;
+    }
 
-  dishFlavorTags.innerHTML = "";
-  (dish.flavor_tags || []).forEach((tag) => {
-    const span = document.createElement("span");
-    span.className = "flavor-tag";
-    span.textContent = tag;
-    dishFlavorTags.appendChild(span);
-  });
+    // Culinary Spotlight Card
+    dishCategory.textContent = dish.category;
+    dishName.textContent = dish.name;
+    dishNepali.textContent = dish.nepali;
+    primaryModelLabel.textContent = `${primary.title} CONFIDENCE`;
+    animateNumber(primaryConfidence, primary.confidence, "%", 460);
+    primaryLatency.textContent = `${primary.latency_ms.toFixed(1)} ms`;
+
+    dishTagline.textContent = dish.tagline;
+
+    // Quick Facts 4-tile grid
+    const qf = dish.quick_facts || {};
+    factTaste.textContent = qf.taste || "—";
+    factMethod.textContent = qf.method || "—";
+    factPairing.textContent = qf.pairing || "—";
+    factVibe.textContent = qf.vibe || "—";
+
+    // 3 Numbered Recipe Steps
+    dishStepsRow.innerHTML = "";
+    (dish.steps || []).forEach((stepText, idx) => {
+      const stepEl = document.createElement("div");
+      stepEl.className = "step-card";
+      stepEl.innerHTML = `
+        <span class="step-num">STEP 0${idx + 1}</span>
+        <p>${stepText}</p>
+      `;
+      dishStepsRow.appendChild(stepEl);
+    });
+
+    dishSpecialty.textContent = dish.specialty || "—";
+
+    // Update Google Maps "Where Can I Get It?" link
+    const mapQuery = encodeURIComponent(`Nepali ${dish.name} restaurant near me`);
+    findNearMeBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+    findNearMeBtn.textContent = `📍 Find ${dish.name} Near Me ↗`;
+
+    dishFlavorTags.innerHTML = "";
+    (dish.flavor_tags || []).forEach((tag) => {
+      const span = document.createElement("span");
+      span.className = "flavor-tag";
+      span.textContent = tag;
+      dishFlavorTags.appendChild(span);
+    });
+  }
 
   // Total Latency
   const sumMs = runs.reduce((acc, r) => acc + r.latency_ms, 0);
@@ -379,7 +432,8 @@ function renderPredictionOutput(data) {
   modelResultsContainer.innerHTML = "";
   runs.forEach((run, i) => {
     const card = document.createElement("div");
-    card.className = `model-run-card ${run.arch === "convnext_tiny" ? "hero-model" : ""}`;
+    const oodClass = !isRecognized || run.is_ood ? "ood-flagged" : "";
+    card.className = `model-run-card ${run.arch === "convnext_tiny" ? "hero-model" : ""} ${oodClass}`.trim();
     card.style.animationDelay = `${i * 70}ms`;
 
     const top3BarsHtml = run.top3
@@ -399,6 +453,12 @@ function renderPredictionOutput(data) {
       .join("");
 
     const paramsM = (run.parameters / 1e6).toFixed(1) + "M";
+    const fallbackNote =
+      !isRecognized || run.is_ood
+        ? `<span class="ood-card-sub">Closest softmax fallback · Entropy H = ${
+            typeof run.normalized_entropy === "number" ? run.normalized_entropy.toFixed(2) : "—"
+          }</span>`
+        : "";
 
     card.innerHTML = `
       <div class="model-card-top">
@@ -410,7 +470,10 @@ function renderPredictionOutput(data) {
       </div>
 
       <div class="model-verdict-row">
-        <span class="verdict-dish">${run.predicted_name} <small>${run.predicted_nepali}</small></span>
+        <div>
+          <span class="verdict-dish">${run.predicted_name} <small>${run.predicted_nepali}</small></span>
+          ${fallbackNote}
+        </div>
         <span class="verdict-conf">${run.confidence.toFixed(2)}%</span>
       </div>
 

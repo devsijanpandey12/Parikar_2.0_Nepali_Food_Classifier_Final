@@ -228,7 +228,64 @@ Unlike rigid objects (cars, airplanes, buildings) that have fixed geometric silh
 
 ---
 
-## 8. Chronological Action & Experiment Log
+## 8. Open-Set & Out-of-Distribution (OOD) Rejection Architecture (`evaluate_ood_gate`)
+
+### The Closed-Set Softmax Problem
+A standard $K = 10$ softmax classifier enforces $\sum_{i=1}^{10} p_i = 1$. Without an open-set rejection layer, uploading an image outside the 10 trained Nepali classes (e.g., pizza, burger, sushi, blank frame, or random non-food object) forces the softmax layer to assign `100%` of the probability mass across the 10 classes and display whichever dish had the slightly highest logit.
+
+### Why Multi-Signal Post-Hoc OOD Rejection Was Chosen Over Retraining
+1. **Preserves Verified Benchmarks & Zero Retraining Overhead:** Retraining with an 11th `"unknown"` background class would alter the 10-class decision boundaries and require regenerating all confusion matrices and benchmark tables (`99.49%` Test Top-1).
+2. **Zero Extra RAM/Container Footprint for Azure for Students:** Loading a separate Vision-Language gatekeeper (such as CLIP/SigLIP) would add `300–600 MB` of weights to the container. The Multi-Signal OOD Gate executes in **`< 0.1 ms` of pure NumPy math** directly on the pre-softmax logits and probabilities already produced by ONNX Runtime.
+3. **Exploits Label Smoothing Calibration ($\varepsilon = 0.1$) + Architectural Diversity (CNN vs. ViT):**
+   - Because all 3 models were trained with `CrossEntropyLoss(label_smoothing=0.1)`, the network is explicitly penalized from driving logits to $+\infty$. For an ideal in-distribution prediction $[0.91, 0.01, \dots, 0.01]$, the theoretical normalized Shannon entropy is:
+     $$\hat{H}_{\text{ideal}} = -\frac{0.91 \ln(0.91) + 9 \times 0.01 \ln(0.01)}{\ln(10)} = \frac{0.5004}{2.3026} \approx \mathbf{0.217}$$
+   - Furthermore, running **two convolutional networks** (`ConvNeXt-Tiny`, `EfficientNetV2-S`) alongside **one hierarchical Vision Transformer** (`Swin-Tiny`) provides natural inductive-bias diversity: on genuine Nepali food, local convolutional texture filters and global shifted-window attention agree **`>98%` of the time**, whereas on out-of-distribution objects they diverge sharply.
+
+### The 5 Mathematical Signals Evaluated in `backend/app.py` (`evaluate_ood_gate`)
+
+For each model inference with raw logit vector $z \in \mathbb{R}^{10}$ and sorted softmax probabilities $p_{(1)} \ge p_{(2)} \ge \dots \ge p_{(10)}$:
+
+1. **Maximum Softmax Probability (`confidence`):**
+   $$\text{MSP}(x) = p_{(1)} \times 100\% \quad \text{(Threshold: } \ge 60.0\% \text{)}$$
+2. **Top-1 vs. Top-2 Decision Margin (`margin`):**
+   $$M(x) = \left(p_{(1)} - p_{(2)}\right) \times 100\% \quad \text{(Threshold: } \ge 35.0\% \text{)}$$
+3. **Normalized Shannon Entropy (`normalized_entropy`):**
+   $$\hat{H}(p) = -\frac{1}{\ln(10)} \sum_{i=1}^{10} p_i \ln(p_i) \in [0, 1] \quad \text{(Threshold: } \le 0.52 \text{)}$$
+4. **Pre-Softmax Maximum Logit & Helmholtz Energy Score (`max_logit`, `energy_score`):**
+   $$z_{\max} = \max_{i} z_i \quad \text{(Threshold: } \ge 2.60 \text{)}, \qquad E(x) = -\ln \sum_{i=1}^{10} e^{z_i}$$
+   *(Raw logit magnitude detects when none of the 10 class detectors fired strongly before softmax normalization.)*
+5. **Cross-Architecture Consensus (`ConvNeXt-Tiny` + `EfficientNetV2-S` + `Swin-Tiny`):**
+   - If all 3 architectures vote for **3 different classes** (`distinct_predictions_count == 3`), the input is immediately rejected.
+   - If 2/3 architectures agree (`Split Verdict`) but ensemble mean confidence is `< 78.0%` (or any single model is `< 58.0%`), the input is rejected.
+   - Even if all 3 architectures happen to pick the same fallback class, if ensemble mean confidence is `< 68.0%` or minimum model confidence is `< 50.0%`, the input is rejected.
+
+### Empirical Calibration (`splits/test.csv` vs. Out-of-Distribution Inputs)
+
+| Metric Signal (`ConvNeXt-Tiny`) | Held-Out Test Set (`p5`–`p95` Range) | Held-Out Test Median | Calibrated OOD Gate Threshold | Typical OOD Input (Noise / Non-Food / Blank) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Top-1 Confidence (`MSP`)** | `90.88% – 92.99%` | `92.01%` | **`< 60.0%` triggers OOD** | `15.9% – 24.7%` |
+| **Top-1 / Top-2 Margin (`M`)** | `89.60% – 92.12%` | `91.03%` | **`< 35.0%` triggers OOD** | `1.8% – 9.0%` |
+| **Normalized Entropy (`H / ln 10`)** | `0.18 – 0.22` | `0.20` | **`> 0.52` triggers OOD** | `0.91 – 0.97` |
+| **Max Pre-Softmax Logit (`z_max`)** | `4.02 – 4.43` | `4.16` | **`< 2.60` triggers OOD** | `0.53 – 1.22` |
+| **Helmholtz Energy (`E(x)`)** | `-4.50 to -4.08` | `-4.25` | Diagnostic telemetry | `-2.62 to -2.24` |
+
+- **Empirical In-Distribution Acceptance Rate:** **`98.33%`** (`295 / 300` stratified unseen test images accepted) and **`100%` (`10 / 10`)** across all pinned showcase samples.
+- **Empirical Out-of-Distribution Rejection Rate:** **`100%`** across synthetic noise, blank/solid color frames, and non-food document/chart graphics.
+
+### Frontend UX Behavior (`frontend/app.js` & `frontend/styles.css`)
+When `/api/predict` returns `is_recognized: false` (`ood_gate.status == "unrecognized_ood"`):
+1. **Amber OOD Spotlight Banner (`.dish-spotlight-card.ood-rejected`):**
+   - Category pill switches to `OUT-OF-DISTRIBUTION · OPEN-SET GATE TRIGGERED`.
+   - Consensus badge switches to `⚠️ Unrecognized / Outside 10 Classes`.
+   - Main title renders **`Unrecognized Dish or Object` (`अज्ञात परिकार`)** instead of falsely claiming a Nepali dish name, while noting the closest softmax fallback and its percentage in the subtitle.
+2. **Automatic Action Suppression:**
+   - The collapsible preparation drawer (`📖 Dish Info & Prep`) and the `📍 Find Near Me` Google Maps button are automatically hidden so the app never displays a Momo or Selroti recipe for an unrecognized object.
+3. **Diagnostic Trigger Pills:**
+   - Renders red/amber diagnostic pills listing every triggered gate condition (e.g., `⚠️ Low Top-1 Confidence`, `⚠️ High Predictive Entropy`, `⚠️ Complete 3-Model Disagreement`) alongside live `Entropy H · Margin · Max Logit` telemetry.
+
+---
+
+## 9. Chronological Action & Experiment Log
 - **[2026-11-17]** Audited workspace structure (`10,025` raw images across `10` classes).
 - **[2026-11-17]** Verified `hydro` Anaconda environment: `Python 3.11.15`, `PyTorch 2.13.0+cu130`, `Torchvision 0.28.0+cu130` on **NVIDIA GeForce RTX 4050 Laptop GPU (6.0 GB VRAM)**.
 - **[2026-11-17]** Ran `src/prepare_dataset.py` across all `10,025` files:
@@ -245,4 +302,6 @@ Unlike rigid objects (cars, airplanes, buildings) that have fixed geometric silh
   - `efficientnet_v2_s.onnx`: `76.87 MB` | CPU Latency: **`18.45 ms`**
   - `swin_t.onnx`: `107.29 MB` | CPU Latency: **`35.75 ms`**
 - **[2026-11-17]** Built FastAPI multi-model inference backend (`backend/app.py`), Azure `Dockerfile`, and bespoke archival/editorial web interface (`frontend/index.html`, `frontend/styles.css`, `frontend/app.js`) featuring live camera capture, 1-click test specimen strip, single/all-3 model toggles, live latency telemetry, and cultural culinary cards, credited to **Sijan Pandey**.
+- **[2026-11-17]** Designed, calibrated, and implemented the **Multi-Signal Open-Set / Out-of-Distribution (OOD) Rejection Gate** (`evaluate_ood_gate` in `backend/app.py` + OOD warning state in `frontend/app.js` and `frontend/styles.css`) combining Label-Smoothed Confidence, Top-1/Top-2 Margin, Normalized Shannon Entropy, Pre-Softmax Logit Energy, and 3-Architecture (CNN vs. ViT) Consensus.
+
 

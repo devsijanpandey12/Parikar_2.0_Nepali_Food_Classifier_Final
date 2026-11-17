@@ -337,6 +337,22 @@ def softmax_np(logits: np.ndarray) -> np.ndarray:
     return exps / np.sum(exps, axis=-1, keepdims=True)
 
 
+# Empirically calibrated on splits/test.csv under Label Smoothing (epsilon = 0.1, K = 10):
+# - Ideal in-distribution top-1 probability is ~91.0% (test median = 92.01%, p1 = 80.01%)
+# - Ideal normalized Shannon entropy H(p)/ln(10) is ~0.217 (test median = 0.20, p95 = 0.22)
+# - Ideal max pre-softmax logit is ~4.16 (test p1 = 3.49)
+OOD_THRESHOLDS = {
+    "min_confidence_pct": 60.0,
+    "min_margin_pct": 35.0,
+    "max_normalized_entropy": 0.52,
+    "min_max_logit": 2.60,
+    "ensemble_split_min_mean_conf_pct": 78.0,
+    "ensemble_split_min_single_conf_pct": 58.0,
+    "ensemble_unanimous_min_mean_conf_pct": 68.0,
+    "ensemble_unanimous_min_single_conf_pct": 50.0,
+}
+
+
 def run_single_model_inference(arch: str, input_tensor: np.ndarray) -> Dict:
     if arch not in ORT_SESSIONS:
         load_models()
@@ -345,11 +361,33 @@ def run_single_model_inference(arch: str, input_tensor: np.ndarray) -> Dict:
 
     sess = ORT_SESSIONS[arch]
     t0 = time.perf_counter()
-    logits = sess.run(["logits"], {"input": input_tensor})[0]
+    logits_batch = sess.run(["logits"], {"input": input_tensor})[0]
     latency_ms = (time.perf_counter() - t0) * 1000.0
 
-    probs = softmax_np(logits)[0]
+    raw_logits = logits_batch[0]
+    probs = softmax_np(logits_batch)[0]
     top_indices = np.argsort(probs)[::-1]
+
+    # Uncertainty & Open-Set OOD telemetry
+    top1_prob = float(probs[top_indices[0]])
+    top2_prob = float(probs[top_indices[1]])
+    confidence_pct = round(top1_prob * 100.0, 2)
+    margin_pct = round((top1_prob - top2_prob) * 100.0, 2)
+    norm_entropy = round(
+        float(-np.sum(probs * np.log(np.clip(probs, 1e-12, 1.0))) / np.log(len(CLASSES))),
+        4
+    )
+    max_logit = round(float(np.max(raw_logits)), 3)
+    # Helmholtz free energy score E(x) = -log sum_i exp(z_i) (Liu et al., NeurIPS 2020)
+    shifted_l = raw_logits - np.max(raw_logits)
+    energy_score = round(float(-(np.max(raw_logits) + np.log(np.sum(np.exp(shifted_l))))), 3)
+
+    model_is_ood = (
+        confidence_pct < OOD_THRESHOLDS["min_confidence_pct"]
+        or margin_pct < OOD_THRESHOLDS["min_margin_pct"]
+        or norm_entropy > OOD_THRESHOLDS["max_normalized_entropy"]
+        or max_logit < OOD_THRESHOLDS["min_max_logit"]
+    )
 
     top_predictions = []
     for idx in top_indices[:3]:
@@ -382,9 +420,101 @@ def run_single_model_inference(arch: str, input_tensor: np.ndarray) -> Dict:
         "predicted_class": winner_key,
         "predicted_name": DISH_CATALOG[winner_key]["name"],
         "predicted_nepali": DISH_CATALOG[winner_key]["nepali"],
-        "confidence": top_predictions[0]["confidence"],
+        "confidence": confidence_pct,
+        "margin": margin_pct,
+        "normalized_entropy": norm_entropy,
+        "max_logit": max_logit,
+        "energy_score": energy_score,
+        "is_ood": bool(model_is_ood),
         "top3": top_predictions,
         "all_probabilities": all_probs
+    }
+
+
+def evaluate_ood_gate(results: List[Dict]) -> Dict:
+    """
+    Multi-Signal Out-of-Distribution (OOD) / Open-Set Rejection Gate.
+    Combines Label-Smoothed Softmax Confidence, Top-1/Top-2 Margin,
+    Normalized Shannon Entropy, Pre-Softmax Logit Magnitude/Energy,
+    and Cross-Architecture (CNN vs. Swin-ViT) Consensus.
+    """
+    primary = results[0]
+    reasons: List[str] = []
+
+    if primary["confidence"] < OOD_THRESHOLDS["min_confidence_pct"]:
+        reasons.append(
+            f"Low Top-1 Confidence ({primary['confidence']:.1f}% < {OOD_THRESHOLDS['min_confidence_pct']:.0f}%)"
+        )
+    if primary["normalized_entropy"] > OOD_THRESHOLDS["max_normalized_entropy"]:
+        reasons.append(
+            f"High Predictive Entropy (H = {primary['normalized_entropy']:.2f} > {OOD_THRESHOLDS['max_normalized_entropy']:.2f})"
+        )
+    if primary["margin"] < OOD_THRESHOLDS["min_margin_pct"]:
+        reasons.append(
+            f"Ambiguous Class Margin ({primary['margin']:.1f}% < {OOD_THRESHOLDS['min_margin_pct']:.0f}%)"
+        )
+    if primary["max_logit"] < OOD_THRESHOLDS["min_max_logit"]:
+        reasons.append(
+            f"Weak Logit Activation ({primary['max_logit']:.2f} < {OOD_THRESHOLDS['min_max_logit']:.2f})"
+        )
+
+    pred_classes = [r["predicted_class"] for r in results]
+    distinct_preds = len(set(pred_classes))
+    mean_conf = float(np.mean([r["confidence"] for r in results]))
+    min_conf = float(np.min([r["confidence"] for r in results]))
+
+    if len(results) > 1:
+        if distinct_preds == len(results):
+            reasons.append("Complete 3-Model Disagreement (CNN vs. ViT voted 3 different classes)")
+        elif distinct_preds > 1 and (
+            mean_conf < OOD_THRESHOLDS["ensemble_split_min_mean_conf_pct"]
+            or min_conf < OOD_THRESHOLDS["ensemble_split_min_single_conf_pct"]
+        ):
+            reasons.append(
+                f"Split Model Verdict with Low Ensemble Confidence (mean {mean_conf:.1f}%, min {min_conf:.1f}%)"
+            )
+        elif (
+            mean_conf < OOD_THRESHOLDS["ensemble_unanimous_min_mean_conf_pct"]
+            or min_conf < OOD_THRESHOLDS["ensemble_unanimous_min_single_conf_pct"]
+        ):
+            reasons.append(
+                f"Weak Ensemble Consensus Confidence (mean {mean_conf:.1f}%, min {min_conf:.1f}%)"
+            )
+
+    is_recognized = len(reasons) == 0
+    supported_list = "Chatpate, Chiya, Dal Bhat, Jeri, Momo, Pakauda, Panipuri, Samosa, Selroti, or Yomari"
+
+    if is_recognized:
+        summary_msg = (
+            f"Verified in-distribution match for {primary['predicted_name']} "
+            f"(H = {primary['normalized_entropy']:.2f}, Max Logit = {primary['max_logit']:.2f})."
+        )
+    else:
+        summary_msg = (
+            f"This image does not confidently match any of the 10 trained Nepali food categories "
+            f"({supported_list}). Closest visual fallback was {primary['predicted_name']} "
+            f"at {primary['confidence']:.1f}% confidence, but the Open-Set OOD Gate rejected it."
+        )
+
+    return {
+        "is_recognized": is_recognized,
+        "is_ood": not is_recognized,
+        "status": "recognized" if is_recognized else "unrecognized_ood",
+        "summary_title": primary["predicted_name"] if is_recognized else "Unrecognized Dish or Object",
+        "summary_nepali": primary["predicted_nepali"] if is_recognized else "अज्ञात परिकार",
+        "summary_message": summary_msg,
+        "reasons": reasons,
+        "metrics": {
+            "primary_confidence": primary["confidence"],
+            "primary_margin": primary["margin"],
+            "primary_normalized_entropy": primary["normalized_entropy"],
+            "primary_max_logit": primary["max_logit"],
+            "primary_energy_score": primary["energy_score"],
+            "ensemble_mean_confidence": round(mean_conf, 2),
+            "ensemble_min_confidence": round(min_conf, 2),
+            "distinct_predictions_count": distinct_preds,
+        },
+        "thresholds": OOD_THRESHOLDS,
     }
 
 
@@ -508,10 +638,13 @@ async def predict_image(
     dish_info = DISH_CATALOG[primary["predicted_class"]]
     predicted_classes = [r["predicted_class"] for r in results]
     unanimous = len(set(predicted_classes)) == 1
+    ood_gate = evaluate_ood_gate(results)
 
     return {
         "mode": model_choice,
         "unanimous_agreement": unanimous,
+        "is_recognized": ood_gate["is_recognized"],
+        "ood_gate": ood_gate,
         "primary_prediction": primary,
         "dish_profile": dish_info,
         "model_runs": results

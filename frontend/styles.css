@@ -915,6 +915,61 @@ body {
   color: var(--emerald);
 }
 
+.consensus-badge.ood-badge {
+  background: rgba(245, 158, 11, 0.16);
+  color: #FBBF24;
+  border: 1px solid rgba(245, 158, 11, 0.42);
+}
+
+.dish-spotlight-card.ood-rejected {
+  border-color: rgba(245, 158, 11, 0.48);
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.08), var(--bg-card));
+}
+
+.dish-spotlight-card.ood-rejected .category-pill {
+  color: #FBBF24;
+}
+
+.dish-spotlight-card.ood-rejected .floating-dish-orb {
+  border-color: #F59E0B;
+  box-shadow: 0 10px 24px rgba(245, 158, 11, 0.25);
+}
+
+.flavor-tag.ood-reason-tag {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.38);
+  color: #FCA5A5;
+}
+
+:root[data-theme="light"] .flavor-tag.ood-reason-tag {
+  background: rgba(239, 68, 68, 0.1);
+  color: #B91C1C;
+}
+
+.flavor-tag.ood-metric-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.71rem;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #FCD34D;
+}
+
+:root[data-theme="light"] .flavor-tag.ood-metric-tag {
+  color: #92400E;
+}
+
+.model-run-card.ood-flagged {
+  border-color: rgba(245, 158, 11, 0.38);
+}
+
+.ood-card-sub {
+  display: block;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.66rem;
+  color: #FBBF24;
+  margin-top: 0.18rem;
+}
+
 .spotlight-main {
   display: flex;
   justify-content: space-between;
