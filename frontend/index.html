@@ -191,18 +191,17 @@
         </button>
       </div>
 
-      <!-- RIGHT PANEL: DETECTED DISH SPOTLIGHT & LIVE MODEL COMPARISON -->
+      <!-- RIGHT PANEL: MODEL-FIRST VERDICT + COMPACT COLLAPSIBLE DISH DRAWER -->
       <div class="output-column">
-        <!-- DISH STORY CARD -->
+        <!-- COMPACT DETECTED DISH VERDICT BANNER -->
         <article class="glass-card dish-spotlight-card reveal-up" id="culinaryCard">
           <div class="spotlight-top">
             <span class="category-pill" id="dishCategory">DETECTED DISH</span>
             <span class="consensus-badge" id="consensusBadge">Ready</span>
           </div>
 
-          <div class="spotlight-main">
+          <div class="spotlight-main compact-main">
             <div class="dish-identity-wrap">
-              <!-- FLOATING ANIMATED DISH AVATAR FOR ALL DISHES -->
               <div class="floating-dish-orb" id="floatingDishOrb">
                 <img id="floatingDishImg" src="" alt="Detected Dish" />
               </div>
@@ -212,7 +211,7 @@
                   <span class="dish-nepali" id="dishNepali">परिकार</span>
                 </div>
                 <p class="dish-tagline" id="dishTagline">
-                  Choose any sample photo above or upload an image to view real-time predictions and cultural notes.
+                  Choose a sample photo or upload an image to compare model predictions.
                 </p>
               </div>
             </div>
@@ -226,77 +225,82 @@
             </div>
           </div>
 
-          <!-- 4 AT-A-GLANCE VISUAL TILES (INSTEAD OF BORING PARAGRAPHS) -->
-          <div class="quick-facts-grid" id="quickFactsGrid">
-            <div class="fact-tile">
-              <span class="fact-icon">🌶️</span>
-              <div>
-                <span class="fact-label">FLAVOR PROFILE</span>
-                <strong class="fact-val" id="factTaste">—</strong>
-              </div>
-            </div>
-            <div class="fact-tile">
-              <span class="fact-icon">🔥</span>
-              <div>
-                <span class="fact-label">COOKING METHOD</span>
-                <strong class="fact-val" id="factMethod">—</strong>
-              </div>
-            </div>
-            <div class="fact-tile">
-              <span class="fact-icon">🥣</span>
-              <div>
-                <span class="fact-label">BEST PAIRED WITH</span>
-                <strong class="fact-val" id="factPairing">—</strong>
-              </div>
-            </div>
-            <div class="fact-tile">
-              <span class="fact-icon">✨</span>
-              <div>
-                <span class="fact-label">CULTURAL VIBE</span>
-                <strong class="fact-val" id="factVibe">—</strong>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3-STEP VISUAL PREPARATION TIMELINE -->
-          <div class="prep-timeline-block">
-            <h4 class="block-label">HOW IT'S CRAFTED (3 STEPS)</h4>
-            <div class="steps-row" id="dishStepsRow">
-              <!-- Populated dynamically with numbered step cards -->
-            </div>
-          </div>
-
-          <!-- SPECIALTY CALLOUT + GOOGLE MAPS "WHERE CAN I GET IT?" BUTTON -->
-          <div class="specialty-action-bar">
-            <div class="specialty-callout">
-              <span class="callout-badge">WHY IT'S ICONIC</span>
-              <p id="dishSpecialty">—</p>
-            </div>
-            <div class="dish-cta-buttons">
-              <a id="findNearMeBtn" href="https://www.google.com/maps/search/?api=1&query=Nepali+Momo+near+me" target="_blank" rel="noopener" class="btn btn-maps">
-                📍 Where Can I Get It? (Google Maps ↗)
+          <!-- COMPACT ACTION BAR: TOGGLE DISH DETAILS + GOOGLE MAPS -->
+          <div class="compact-dish-bar">
+            <div class="flavor-tags-row compact-tags" id="dishFlavorTags"></div>
+            <div class="compact-bar-Right">
+              <button type="button" class="btn btn-ghost btn-sm" id="toggleDishDetailsBtn" aria-expanded="false">
+                <span id="toggleDishDetailsText">📖 Dish Info &amp; Prep</span>
+                <span class="drawer-chevron" id="dishDrawerChevron">▾</span>
+              </button>
+              <a id="findNearMeBtn" href="https://www.google.com/maps/search/?api=1&query=Nepali+Momo+near+me" target="_blank" rel="noopener" class="btn btn-maps btn-sm">
+                📍 Find Near Me ↗
               </a>
             </div>
           </div>
 
-          <div class="flavor-tags-row" id="dishFlavorTags"></div>
-        </article>
-      </div>
+          <!-- COLLAPSIBLE DISH PREPARATION & CULTURAL DETAILS (HIDDEN BY DEFAULT) -->
+          <div class="dish-collapsible-body" id="dishCollapsibleBody">
+            <div class="quick-facts-grid" id="quickFactsGrid">
+              <div class="fact-tile">
+                <span class="fact-icon">🌶️</span>
+                <div>
+                  <span class="fact-label">FLAVOR PROFILE</span>
+                  <strong class="fact-val" id="factTaste">—</strong>
+                </div>
+              </div>
+              <div class="fact-tile">
+                <span class="fact-icon">🔥</span>
+                <div>
+                  <span class="fact-label">COOKING METHOD</span>
+                  <strong class="fact-val" id="factMethod">—</strong>
+                </div>
+              </div>
+              <div class="fact-tile">
+                <span class="fact-icon">🥣</span>
+                <div>
+                  <span class="fact-label">BEST PAIRED WITH</span>
+                  <strong class="fact-val" id="factPairing">—</strong>
+                </div>
+              </div>
+              <div class="fact-tile">
+                <span class="fact-icon">✨</span>
+                <div>
+                  <span class="fact-label">CULTURAL VIBE</span>
+                  <strong class="fact-val" id="factVibe">—</strong>
+                </div>
+              </div>
+            </div>
 
-      <!-- STEP 02: FULL-SCREEN WIDTH MODEL HEAD-TO-HEAD TELEMETRY -->
-      <section class="glass-card telemetry-panel full-span-panel reveal-up">
-        <div class="telemetry-header">
-          <div>
-            <span class="step-badge">STEP 02</span>
-            <h3>Model Confidence &amp; Latency Comparison</h3>
+            <div class="prep-timeline-block">
+              <h4 class="block-label">HOW IT'S CRAFTED</h4>
+              <div class="steps-row" id="dishStepsRow"></div>
+            </div>
+
+            <div class="specialty-action-bar">
+              <div class="specialty-callout">
+                <span class="callout-badge">WHY IT'S ICONIC</span>
+                <p id="dishSpecialty">—</p>
+              </div>
+            </div>
           </div>
-          <span class="badge-mono" id="totalInferenceTime">ONNX CPU Engine</span>
-        </div>
+        </article>
 
-        <div class="model-cards-container" id="modelResultsContainer">
-          <!-- Populated dynamically when inference runs -->
-        </div>
-      </section>
+        <!-- STEP 02: PROMINENT MODEL CONFIDENCE & LATENCY COMPARISON RIGHT BELOW VERDICT -->
+        <section class="glass-card telemetry-panel reveal-up">
+          <div class="telemetry-header">
+            <div>
+              <span class="step-badge">STEP 02</span>
+              <h3>Model Confidence &amp; Latency Comparison</h3>
+            </div>
+            <span class="badge-mono" id="totalInferenceTime">ONNX CPU Engine</span>
+          </div>
+
+          <div class="model-cards-container" id="modelResultsContainer">
+            <!-- Populated dynamically when inference runs -->
+          </div>
+        </section>
+      </div>
     </div>
   </main>
 

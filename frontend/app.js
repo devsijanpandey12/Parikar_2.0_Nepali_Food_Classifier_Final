@@ -66,6 +66,19 @@ const toggleMatrixDrawerBtn = document.getElementById("toggleMatrixDrawerBtn");
 const matrixDrawerBtnText = document.getElementById("matrixDrawerBtnText");
 const matrixDrawerContent = document.getElementById("matrixDrawerContent");
 
+const toggleDishDetailsBtn = document.getElementById("toggleDishDetailsBtn");
+const toggleDishDetailsText = document.getElementById("toggleDishDetailsText");
+const dishCollapsibleBody = document.getElementById("dishCollapsibleBody");
+
+if (toggleDishDetailsBtn && dishCollapsibleBody) {
+  toggleDishDetailsBtn.addEventListener("click", () => {
+    const isOpen = dishCollapsibleBody.classList.toggle("open");
+    toggleDishDetailsBtn.classList.toggle("open", isOpen);
+    toggleDishDetailsBtn.setAttribute("aria-expanded", String(isOpen));
+    toggleDishDetailsText.textContent = isOpen ? "📖 Hide Dish Info" : "📖 Dish Info & Prep";
+  });
+}
+
 if (toggleMatrixDrawerBtn && matrixDrawerContent) {
   toggleMatrixDrawerBtn.addEventListener("click", () => {
     const isOpen = matrixDrawerContent.classList.toggle("open");
@@ -348,7 +361,7 @@ function renderPredictionOutput(data) {
   // Update Google Maps "Where Can I Get It?" link
   const mapQuery = encodeURIComponent(`Nepali ${dish.name} restaurant near me`);
   findNearMeBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
-  findNearMeBtn.textContent = `📍 Where Can I Get ${dish.name}? (Maps ↗)`;
+  findNearMeBtn.textContent = `📍 Find ${dish.name} Near Me ↗`;
 
   dishFlavorTags.innerHTML = "";
   (dish.flavor_tags || []).forEach((tag) => {
