@@ -796,13 +796,34 @@ body {
 }
 
 .btn-maps {
-  background: rgba(16, 185, 129, 0.18);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(120deg, rgba(16, 185, 129, 0.2), rgba(255, 107, 53, 0.22), rgba(16, 185, 129, 0.2));
+  background-size: 220% 220%;
   color: #34D399;
-  border: 1.5px solid rgba(16, 185, 129, 0.65);
+  border: 1.5px solid rgba(52, 211, 153, 0.55);
   font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.38), inset 0 0 10px rgba(16, 185, 129, 0.15);
-  animation: mapsPulseGlow 2.4s ease-in-out infinite;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.24);
+  animation: mapsFlowGradient 4s linear infinite;
+}
+
+.btn-maps::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 75%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.24),
+    transparent
+  );
+  transform: skewX(-22deg);
+  animation: mapsSheenSlide 3.6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  pointer-events: none;
 }
 
 :root[data-theme="light"] .btn-maps {
@@ -812,15 +833,28 @@ body {
 .btn-maps:hover {
   background: var(--emerald);
   color: #fff;
-  box-shadow: 0 0 26px rgba(16, 185, 129, 0.75);
+  border-color: var(--emerald);
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.48);
 }
 
-@keyframes mapsPulseGlow {
-  0%, 100% {
-    box-shadow: 0 0 14px rgba(16, 185, 129, 0.35), inset 0 0 8px rgba(16, 185, 129, 0.12);
+@keyframes mapsFlowGradient {
+  0% {
+    background-position: 0% 50%;
   }
   50% {
-    box-shadow: 0 0 24px rgba(16, 185, 129, 0.68), 0 0 8px rgba(255, 107, 53, 0.25), inset 0 0 12px rgba(16, 185, 129, 0.22);
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes mapsSheenSlide {
+  0% {
+    left: -120%;
+  }
+  55%, 100% {
+    left: 160%;
   }
 }
 
@@ -1370,11 +1404,17 @@ body {
   gap: 1.25rem;
 }
 
+.showcase-header {
+  width: 100%;
+}
+
 .showcase-copy {
-  font-size: 0.88rem;
+  font-size: 0.94rem;
   color: var(--text-secondary);
-  max-width: 78ch;
+  width: 100%;
+  max-width: 100%;
   margin-top: 0.35rem;
+  line-height: 1.65;
 }
 
 .math-inline {
