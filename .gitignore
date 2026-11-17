@@ -10,10 +10,10 @@ samosa/
 selroti/
 yomari/
 
-# Large PyTorch checkpoints & raw ONNX binaries (keep metrics, plots, and manifest JSONs)
+# Large PyTorch checkpoints & ONNX folder (kept locally on computer, excluded from Git)
 experiments/**/*.pt
 experiments/**/*.pth
-models_onnx/*.onnx
+models_onnx/
 
 # Python / Conda / OS artifacts
 __pycache__/

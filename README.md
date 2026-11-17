@@ -1,6 +1,10 @@
 # Parikar 2.0 — Nepali Food Classifier
 
-End-to-end computer vision pipeline for classifying **10 traditional and street Nepali dishes** (`momo`, `dalbhat`, `selroti`, `yomari`, `chatpate`, `jeri`, `samosa`, `panipuri`, `pakauda`, and `chiya`), built for cloud deployment on **Microsoft Azure for Students** + **GitHub**.
+**Created & Engineered by Sijan Pandey**
+
+End-to-end computer vision pipeline and real-time multi-model studio for classifying **10 traditional and street Nepali dishes & beverages** (`momo`, `dalbhat`, `selroti`, `yomari`, `chatpate`, `jeri`, `samosa`, `panipuri`, `pakauda`, and `chiya`), built for cloud deployment on **Microsoft Azure for Students** + **GitHub**.
+
+![Parikar 2.0 Web Studio](docs/website_preview.jpg)
 
 ---
 
