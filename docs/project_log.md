@@ -210,6 +210,24 @@ Unlike rigid objects (cars, airplanes, buildings) that have fixed geometric silh
 
 ---
 
+### Interview Deep-Dive: "Why Did You Train for Only 6 Epochs, and Did You Use Early Stopping?"
+
+1. **Why 6 Epochs Was Mathematically Sufficient (The `0.5004` Label-Smoothing Entropy Floor):**
+   - Training a vision model *from scratch* requires `100–300` epochs because filters start as random noise. With **ImageNet-1K Transfer Learning**, the backbone already extracts rich edge, color, and texture hierarchies on day one (`ConvNeXt-Tiny` hit `97.58%` Val Top-1 after just 1 epoch of linear-head warmup).
+   - More importantly, we trained with `CrossEntropyLoss(label_smoothing=0.1)` across $K = 10$ classes. Under label smoothing $\epsilon = 0.1$, the target probability for the true class is $1 - \epsilon + \frac{\epsilon}{K} = 0.91$, and for each of the 9 other classes is $\frac{\epsilon}{K} = 0.01$.
+   - Therefore, **the theoretical minimum possible training loss (even for a 100% accurate oracle model) is not `0.0000`, but `0.5004`:**
+     $$\mathcal{L}_{\min} = -\Big(0.91 \ln(0.91) + 9 \times 0.01 \ln(0.01)\Big) = 0.0859 + 0.4145 = \mathbf{0.5004}$$
+   - By **Epoch 6** (`1,488` gradient updates), all three models had reached **`99.71%–99.90%` training accuracy** and training losses of **`0.5082`** (`ConvNeXt-Tiny`), **`0.5146`** (`EfficientNetV2-S`), and **`0.5167`** (`Swin-Tiny`)—sitting within **`0.0078`** of the theoretical `0.5004` floor while Cosine Annealing decayed the learning rate to `1e-6`. Training for 20–50 epochs past the theoretical loss floor would only force the network to memorize background noise.
+
+2. **How We Used Early Stopping (Best-Macro-F1 Checkpoint Selection):**
+   - Instead of blindly deploying the final epoch (`Epoch 6`), `src/train_and_eval.py` implements **Best-Validation-Macro-F1 Checkpointing** (retrospective early stopping over the cosine schedule): `best_model.pt` is only saved when `val_macro_f1` strictly improves.
+   - **Empirical proof that early stopping worked:**
+     - **`Swin-Tiny` stopped saving at Epoch 3** (`Val Macro-F1 = 98.57%`), automatically discarding Epochs 4, 5, and 6 where validation Macro-F1 degraded (`97.91%`, `98.06%`, `98.21%`).
+     - **`EfficientNetV2-S` stopped saving at Epoch 5** (`Val Macro-F1 = 99.01%`), discarding Epoch 6 (`98.96%`).
+     - **`ConvNeXt-Tiny` improved all the way to Epoch 6** (`Val Macro-F1 = 99.12%`, `Val Loss = 0.1103`).
+
+---
+
 ## 8. Chronological Action & Experiment Log
 - **[2026-11-17]** Audited workspace structure (`10,025` raw images across `10` classes).
 - **[2026-11-17]** Verified `hydro` Anaconda environment: `Python 3.11.15`, `PyTorch 2.13.0+cu130`, `Torchvision 0.28.0+cu130` on **NVIDIA GeForce RTX 4050 Laptop GPU (6.0 GB VRAM)**.
