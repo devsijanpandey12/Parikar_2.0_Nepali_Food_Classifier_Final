@@ -41,9 +41,11 @@ Before training any model, we ran an automated integrity and cryptographic dedup
 
 | Model Architecture | Params | Val Top-1 | Val Macro-F1 | Test Top-1 Acc | Test Top-3 Acc | Test Balanced Acc | Test Macro-F1 | `chatpate` F1 (Minority) | Latency |
 | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| **`ConvNeXt-Tiny`** | 27.8M | 99.29% | 99.12% | **99.49%** | 99.90% | **99.51%** | **99.51%** | **100.00%** | 19.48 ms |
-| **`EfficientNetV2-S`** | 20.2M | 98.99% | 99.01% | 99.39% | **100.00%** | 99.32% | 99.24% | 98.55% | **18.70 ms** |
-| **`Swin-Tiny`** | 27.5M | *Training...* | *Training...* | *Training...* | *Training...* | *Training...* | *Training...* | *Training...* | *Training...* |
+| **`ConvNeXt-Tiny`** | 27.8M | **99.29%** | **99.12%** | **99.49%** | 99.90% | **99.51%** | **99.51%** | **100.00%** | 19.48 ms |
+| **`EfficientNetV2-S`** | **20.2M** | 98.99% | 99.01% | 99.39% | **100.00%** | 99.32% | 99.24% | 98.55% | 18.70 ms |
+| **`Swin-Tiny`** | 27.5M | 98.69% | 98.57% | 97.88% | 99.90% | 98.04% | 97.98% | **100.00%** | **15.47 ms** |
+
+![Benchmark Comparison](experiments/model_comparison_benchmark.png)
 
 ---
 

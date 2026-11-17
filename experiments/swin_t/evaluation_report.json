@@ -1,0 +1,469 @@
+{
+  "architecture": "swin_t",
+  "total_parameters": 27527044,
+  "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "best_epoch": 3,
+  "epochs_trained": 6,
+  "history": [
+    {
+      "epoch": 1,
+      "phase": "Phase 1 (Frozen Backbone Head Warmup)",
+      "train_loss": 0.9466,
+      "train_acc": 0.8558,
+      "val_loss": 0.2295,
+      "val_top1_acc": 0.9687,
+      "val_top3_acc": 0.996,
+      "val_balanced_acc": 0.9677,
+      "val_macro_f1": 0.9633,
+      "epoch_seconds": 71.8
+    },
+    {
+      "epoch": 2,
+      "phase": "Phase 2 (Full Fine-Tuning)",
+      "train_loss": 0.6488,
+      "train_acc": 0.9572,
+      "val_loss": 0.1167,
+      "val_top1_acc": 0.9859,
+      "val_top3_acc": 0.999,
+      "val_balanced_acc": 0.9833,
+      "val_macro_f1": 0.9843,
+      "epoch_seconds": 101.2
+    },
+    {
+      "epoch": 3,
+      "phase": "Phase 2 (Full Fine-Tuning)",
+      "train_loss": 0.575,
+      "train_acc": 0.9806,
+      "val_loss": 0.1212,
+      "val_top1_acc": 0.9869,
+      "val_top3_acc": 0.998,
+      "val_balanced_acc": 0.9871,
+      "val_macro_f1": 0.9857,
+      "epoch_seconds": 103.4
+    },
+    {
+      "epoch": 4,
+      "phase": "Phase 2 (Full Fine-Tuning)",
+      "train_loss": 0.5448,
+      "train_acc": 0.9879,
+      "val_loss": 0.1278,
+      "val_top1_acc": 0.9808,
+      "val_top3_acc": 0.998,
+      "val_balanced_acc": 0.9797,
+      "val_macro_f1": 0.9791,
+      "epoch_seconds": 96.4
+    },
+    {
+      "epoch": 5,
+      "phase": "Phase 2 (Full Fine-Tuning)",
+      "train_loss": 0.5278,
+      "train_acc": 0.9929,
+      "val_loss": 0.1212,
+      "val_top1_acc": 0.9828,
+      "val_top3_acc": 0.999,
+      "val_balanced_acc": 0.9779,
+      "val_macro_f1": 0.9806,
+      "epoch_seconds": 95.7
+    },
+    {
+      "epoch": 6,
+      "phase": "Phase 2 (Full Fine-Tuning)",
+      "train_loss": 0.5167,
+      "train_acc": 0.9973,
+      "val_loss": 0.1174,
+      "val_top1_acc": 0.9838,
+      "val_top3_acc": 0.999,
+      "val_balanced_acc": 0.9804,
+      "val_macro_f1": 0.9821,
+      "epoch_seconds": 88.0
+    }
+  ],
+  "best_val_metrics": {
+    "top1_accuracy": 0.9869,
+    "top3_accuracy": 0.998,
+    "balanced_accuracy_macro_recall": 0.9871,
+    "macro_precision": 0.9846,
+    "macro_f1": 0.9857,
+    "weighted_f1": 0.9869,
+    "per_class": {
+      "chatpate": {
+        "precision": 0.9714,
+        "recall": 1.0,
+        "f1": 0.9855,
+        "support": 34
+      },
+      "chiya": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 109
+      },
+      "dalbhat": {
+        "precision": 0.9839,
+        "recall": 1.0,
+        "f1": 0.9919,
+        "support": 61
+      },
+      "jeri": {
+        "precision": 1.0,
+        "recall": 0.9836,
+        "f1": 0.9917,
+        "support": 122
+      },
+      "momo": {
+        "precision": 0.9954,
+        "recall": 0.9775,
+        "f1": 0.9864,
+        "support": 222
+      },
+      "pakauda": {
+        "precision": 0.9756,
+        "recall": 1.0,
+        "f1": 0.9877,
+        "support": 80
+      },
+      "panipuri": {
+        "precision": 1.0,
+        "recall": 0.9767,
+        "f1": 0.9882,
+        "support": 86
+      },
+      "samosa": {
+        "precision": 0.9627,
+        "recall": 1.0,
+        "f1": 0.981,
+        "support": 129
+      },
+      "selroti": {
+        "precision": 0.981,
+        "recall": 0.981,
+        "f1": 0.981,
+        "support": 105
+      },
+      "yomari": {
+        "precision": 0.9756,
+        "recall": 0.9524,
+        "f1": 0.9639,
+        "support": 42
+      }
+    },
+    "confusion_matrix": [
+      [
+        34,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        109,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        61,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        120,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        217,
+        1,
+        0,
+        3,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        80,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        84,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        129,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        103,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        40
+      ]
+    ],
+    "loss": 0.1212,
+    "inference_ms_per_image": 21.28
+  },
+  "test_metrics": {
+    "top1_accuracy": 0.9788,
+    "top3_accuracy": 0.999,
+    "balanced_accuracy_macro_recall": 0.9804,
+    "macro_precision": 0.9794,
+    "macro_f1": 0.9798,
+    "weighted_f1": 0.9789,
+    "per_class": {
+      "chatpate": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 34
+      },
+      "chiya": {
+        "precision": 0.9732,
+        "recall": 0.9909,
+        "f1": 0.982,
+        "support": 110
+      },
+      "dalbhat": {
+        "precision": 0.9839,
+        "recall": 1.0,
+        "f1": 0.9919,
+        "support": 61
+      },
+      "jeri": {
+        "precision": 0.9917,
+        "recall": 0.9836,
+        "f1": 0.9877,
+        "support": 122
+      },
+      "momo": {
+        "precision": 0.9907,
+        "recall": 0.964,
+        "f1": 0.9772,
+        "support": 222
+      },
+      "pakauda": {
+        "precision": 0.9873,
+        "recall": 0.975,
+        "f1": 0.9811,
+        "support": 80
+      },
+      "panipuri": {
+        "precision": 1.0,
+        "recall": 0.9655,
+        "f1": 0.9825,
+        "support": 87
+      },
+      "samosa": {
+        "precision": 0.9338,
+        "recall": 0.9922,
+        "f1": 0.9621,
+        "support": 128
+      },
+      "selroti": {
+        "precision": 0.9808,
+        "recall": 0.9808,
+        "f1": 0.9808,
+        "support": 104
+      },
+      "yomari": {
+        "precision": 0.9524,
+        "recall": 0.9524,
+        "f1": 0.9524,
+        "support": 42
+      }
+    },
+    "confusion_matrix": [
+      [
+        34,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        109,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        61,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        120,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        214,
+        0,
+        0,
+        6,
+        0,
+        1
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        0,
+        78,
+        0,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        1,
+        0,
+        84,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        127,
+        0,
+        1
+      ],
+      [
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        102,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        40
+      ]
+    ],
+    "loss": 0.1288,
+    "inference_ms_per_image": 15.47
+  }
+}

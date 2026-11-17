@@ -1,0 +1,74 @@
+[
+  {
+    "epoch": 1,
+    "phase": "Phase 1 (Frozen Backbone Head Warmup)",
+    "train_loss": 0.9466,
+    "train_acc": 0.8558,
+    "val_loss": 0.2295,
+    "val_top1_acc": 0.9687,
+    "val_top3_acc": 0.996,
+    "val_balanced_acc": 0.9677,
+    "val_macro_f1": 0.9633,
+    "epoch_seconds": 71.8
+  },
+  {
+    "epoch": 2,
+    "phase": "Phase 2 (Full Fine-Tuning)",
+    "train_loss": 0.6488,
+    "train_acc": 0.9572,
+    "val_loss": 0.1167,
+    "val_top1_acc": 0.9859,
+    "val_top3_acc": 0.999,
+    "val_balanced_acc": 0.9833,
+    "val_macro_f1": 0.9843,
+    "epoch_seconds": 101.2
+  },
+  {
+    "epoch": 3,
+    "phase": "Phase 2 (Full Fine-Tuning)",
+    "train_loss": 0.575,
+    "train_acc": 0.9806,
+    "val_loss": 0.1212,
+    "val_top1_acc": 0.9869,
+    "val_top3_acc": 0.998,
+    "val_balanced_acc": 0.9871,
+    "val_macro_f1": 0.9857,
+    "epoch_seconds": 103.4
+  },
+  {
+    "epoch": 4,
+    "phase": "Phase 2 (Full Fine-Tuning)",
+    "train_loss": 0.5448,
+    "train_acc": 0.9879,
+    "val_loss": 0.1278,
+    "val_top1_acc": 0.9808,
+    "val_top3_acc": 0.998,
+    "val_balanced_acc": 0.9797,
+    "val_macro_f1": 0.9791,
+    "epoch_seconds": 96.4
+  },
+  {
+    "epoch": 5,
+    "phase": "Phase 2 (Full Fine-Tuning)",
+    "train_loss": 0.5278,
+    "train_acc": 0.9929,
+    "val_loss": 0.1212,
+    "val_top1_acc": 0.9828,
+    "val_top3_acc": 0.999,
+    "val_balanced_acc": 0.9779,
+    "val_macro_f1": 0.9806,
+    "epoch_seconds": 95.7
+  },
+  {
+    "epoch": 6,
+    "phase": "Phase 2 (Full Fine-Tuning)",
+    "train_loss": 0.5167,
+    "train_acc": 0.9973,
+    "val_loss": 0.1174,
+    "val_top1_acc": 0.9838,
+    "val_top3_acc": 0.999,
+    "val_balanced_acc": 0.9804,
+    "val_macro_f1": 0.9821,
+    "epoch_seconds": 88.0
+  }
+]

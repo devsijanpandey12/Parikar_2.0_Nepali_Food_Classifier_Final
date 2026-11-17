@@ -181,6 +181,35 @@ Unlike rigid objects (cars, airplanes, buildings) that have fixed geometric silh
 
 ---
 
+### Experiment 3: `Swin-Tiny` (`27,527,044` Parameters — Hierarchical Shifted-Window Vision Transformer)
+- **Training Setup & Empirical Takeaway (Crucial for Interviews):**
+  - `Swin-Tiny` reached its best validation score at **Epoch 3 (`98.69%` Val Top-1, `98.57%` Val Macro-F1)**, after which training accuracy continued climbing (`98.06%` $\to$ `99.73%`) while validation Macro-F1 plateaued around `97.91%–98.21%`.
+  - On the held-out Test Set (`990` unseen images), `Swin-Tiny` achieved **`97.88%` Top-1 Accuracy (`97.98%` Macro-F1)**—strong, but **`1.53%` lower Macro-F1 than `ConvNeXt-Tiny` (`99.51%`)** and **`1.26%` lower than `EfficientNetV2-S` (`99.24%`)**.
+  - **Why did `ConvNeXt-Tiny` and `EfficientNetV2-S` beat `Swin-Tiny`?** Specifically, in `Swin-Tiny`'s test confusion matrix, `6` `momo` images were misclassified as `samosa` (both are folded dough items), reducing `samosa` precision to `93.38%` and `yomari` F1 to `95.24%`. Even with shifted windows, Vision Transformers have weaker local edge/pleat inductive bias than `ConvNeXt`'s `7×7` depthwise convolutions when training on a mid-sized (`7,924`-image) dataset.
+
+#### Epoch-by-Epoch Progression (`experiments/swin_t/training_history.json`)
+
+| Epoch | Training Phase | Train Loss | Train Acc | Val Loss | Val Top-1 Acc | Val Top-3 Acc | Val Balanced Acc | Val Macro-F1 | Time (s) |
+| :---: | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | Phase 1 (Head Warmup) | 0.9466 | 85.58% | 0.2295 | 96.87% | 99.60% | 96.77% | 96.33% | 71.8s |
+| 2 | Phase 2 (Full Fine-Tune) | 0.6488 | 95.72% | 0.1167 | 98.59% | 99.90% | 98.33% | 98.43% | 101.2s |
+| **3** | **Phase 2 (Best Checkpoint)** | **0.5750** | **98.06%** | **0.1212** | **98.69%** | **99.80%** | **98.71%** | **98.57%** | **103.4s** |
+| 4 | Phase 2 (Full Fine-Tune) | 0.5448 | 98.79% | 0.1278 | 98.08% | 99.80% | 97.97% | 97.91% | 96.4s |
+| 5 | Phase 2 (Full Fine-Tune) | 0.5278 | 99.29% | 0.1212 | 98.28% | 99.90% | 97.79% | 98.06% | 95.7s |
+| 6 | Phase 2 (Full Fine-Tune) | 0.5167 | 99.73% | 0.1174 | 98.38% | 99.90% | 98.04% | 98.21% | 88.0s |
+
+---
+
+### Side-by-Side 3-Model Final Benchmark Summary (`990` Unseen Test Images)
+
+| Model Architecture | Family | Params | Best Epoch | Val Top-1 | Val Macro-F1 | Test Top-1 | Test Top-3 | Test Balanced Acc | Test Macro-F1 | `chatpate` F1 | `yomari` F1 | Verdict |
+| :--- | :--- | ---: | :---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | :--- |
+| **`ConvNeXt-Tiny`** | Modernized 7×7 CNN | 27.8M | 6 | **99.29%** | **99.12%** | **99.49%** | 99.90% | **99.51%** | **99.51%** | **100.00%** | **100.00%** | **Winner (Highest Accuracy & Macro-F1)** |
+| **`EfficientNetV2-S`** | Fused-MBConv CNN | **20.2M** | 5 | 98.99% | 99.01% | 99.39% | **100.00%** | 99.32% | 99.24% | 98.55% | 97.62% | **Runner-Up (Smallest Size & 100% Top-3)** |
+| **`Swin-Tiny`** | Shifted-Window ViT | 27.5M | 3 | 98.69% | 98.57% | 97.88% | 99.90% | 98.04% | 97.98% | **100.00%** | 95.24% | **3rd Place (Early Overfitting after Ep 3)** |
+
+---
+
 ## 8. Chronological Action & Experiment Log
 - **[2026-11-17]** Audited workspace structure (`10,025` raw images across `10` classes).
 - **[2026-11-17]** Verified `hydro` Anaconda environment: `Python 3.11.15`, `PyTorch 2.13.0+cu130`, `Torchvision 0.28.0+cu130` on **NVIDIA GeForce RTX 4050 Laptop GPU (6.0 GB VRAM)**.
@@ -191,4 +220,6 @@ Unlike rigid objects (cars, airplanes, buildings) that have fixed geometric silh
 - **[2026-11-17]** Built two-stage transfer learning & evaluation script (`src/train_and_eval.py`) supporting `convnext_tiny`, `efficientnet_v2_s`, `swin_t`, and `vit_b_16` with `bfloat16` mixed precision and full evaluation metrics.
 - **[2026-11-17]** Trained & evaluated Model 1 (`convnext_tiny`) for 6 epochs on RTX 4050 GPU: achieved **`99.29%` Val Top-1 (`99.12%` Val Macro-F1)** and **`99.49%` Test Top-1 (`99.51%` Test Macro-F1, `100%` F1 on minority classes `chatpate` and `yomari`)**.
 - **[2026-11-17]** Trained & evaluated Model 2 (`efficientnet_v2_s`) for 6 epochs on RTX 4050 GPU: peaked at Epoch 5 with **`98.99%` Val Top-1 (`99.01%` Val Macro-F1)** and achieved **`99.39%` Test Top-1, `100.00%` Test Top-3, `99.24%` Test Macro-F1, and `18.70 ms/img` latency**.
+- **[2026-11-17]** Trained & evaluated Model 3 (`swin_t`) for 6 epochs on RTX 4050 GPU: peaked at Epoch 3 with **`98.69%` Val Top-1 (`98.57%` Val Macro-F1)** and achieved **`97.88%` Test Top-1 (`97.98%` Test Macro-F1)**, empirically confirming that convolutional inductive bias (`ConvNeXt-Tiny` / `EfficientNetV2-S`) outperforms self-attention on fine-grained food textures (`momo` vs. `samosa` vs. `yomari`) at the `10k`-image scale.
+- **[2026-11-17]** Generated side-by-side benchmark visualization (`experiments/model_comparison_benchmark.png`).
 
