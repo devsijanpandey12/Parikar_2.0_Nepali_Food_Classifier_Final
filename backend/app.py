@@ -24,97 +24,197 @@ CLASSES = [
     "pakauda", "panipuri", "samosa", "selroti", "yomari"
 ]
 
-# Curated, concise, non-generic culinary field notes for each of the 10 classes
+# Structured, visual, scannable culinary data (zero boring walls of text!)
 DISH_CATALOG: Dict[str, Dict] = {
     "momo": {
         "name": "Momo",
         "nepali": "म:म",
-        "category": "Dumpling · Staple Street & Festive Dish",
-        "tagline": "Hand-pleated dumplings steamed over aromatic broth and served with fiery tomato-timur achar.",
-        "preparation": "Finely minced meat, paneer, or spiced cabbage-onion filling wrapped in thin unleavened wheat dough, pleated into crescents or pouches, and steamed in a tiered muktoo.",
-        "specialty": "The signature dipping sauce (achar)—roasted tomatoes, Sichuan pepper (timur), sesame, and chili—plus variations like Jhol Momo (drowned in tangy spiced broth) and Kothey (pan-seared).",
-        "flavor_tags": ["Savory", "Timur Pepper", "Steamed / Pan-Seared", "Sesame Achar"]
+        "category": "Steamed Dumpling · Street & Family Icon",
+        "tagline": "Juicy hand-pleated dumplings steamed over aromatic broth and served with fiery tomato-timur achar.",
+        "quick_facts": {
+            "taste": "Savory, juicy & numbing timur spice",
+            "method": "Steamed in tiered muktoo (12 mins)",
+            "pairing": "Roasted tomato-sesame jhol achar",
+            "vibe": "Nepal's #1 comfort food anywhere, anytime"
+        },
+        "steps": [
+            "Knead thin unleavened wheat wrappers and pack with spiced minced meat, paneer, or crunchy cabbage-onion filling.",
+            "Pinch into intricate circular pleats or crescent pouches to lock in the aromatic juices.",
+            "Steam over boiling broth and serve piping hot with roasted tomato, chili, and Sichuan pepper (timur) dipping sauce."
+        ],
+        "specialty": "Whether drowned in tangy spiced soup (Jhol Momo), pan-seared crisp (Kothey), or tossed in chili sauce (C-Momo), the magic is always in the house-ground timur achar.",
+        "flavor_tags": ["Hand-Pleated", "Timur Pepper Kick", "Sesame Jhol", "Steamed / Seared"]
     },
     "dalbhat": {
         "name": "Dal Bhat",
         "nepali": "दाल भात तरकारी",
-        "category": "Traditional Thali · National Everyday Meal",
-        "tagline": "The cornerstone of Nepali cuisine—steamed rice surrounded by spiced lentil soup, seasonal tarkari, greens, and achar.",
-        "preparation": "Slow-simmered black or yellow lentils (dal) tempered with jimbu, garlic, and ghee, plated on a brass thali alongside fluffy rice (bhat), curried vegetables (tarkari), sautéed mustang greens (saag), and crispy papad.",
-        "specialty": "Celebrated across the Himalayas with the phrase 'Dal Bhat Power, 24 Hour'—a complete balance of carbohydrates, plant protein, probiotic pickles, and mountain herbs.",
-        "flavor_tags": ["Jimbu Tempered", "Brass Thali", "Wholesome", "Multi-Component"]
+        "category": "Traditional Brass Thali · National Meal",
+        "tagline": "Fluffy steamed rice surrounded by jimbu-tempered lentil soup, seasonal tarkari, sautéed greens, and fiery achar.",
+        "quick_facts": {
+            "taste": "Earthy, garlicky & deeply comforting",
+            "method": "Slow-simmered dal + sizzling ghee tadka",
+            "pairing": "Mustang saag, crispy papad & timur achar",
+            "vibe": "“Dal Bhat Power, 24 Hour!” — Himalayan fuel"
+        },
+        "steps": [
+            "Simmer black or yellow lentils until velvety, then temper with sizzling ghee, garlic, cumin, and aromatic mountain herb jimbu.",
+            "Steam fragrant long-grain rice and surround it on a brass thali with spiced potato-cauliflower tarkari and sautéed mustard greens.",
+            "Finish with fermented radish pickle (mula ko achar), fresh lime, and roasted papad—mixed by hand for the perfect bite."
+        ],
+        "specialty": "A complete nutritional powerhouse combining complex carbs, lentil protein, and probiotic pickles—refilled endlessly in every Nepali home and trekking teahouse.",
+        "flavor_tags": ["Jimbu Ghee Tadka", "Brass Thali", "24-Hour Trekker Fuel", "Complete Meal"]
     },
     "selroti": {
         "name": "Selroti",
         "nepali": "सेलरोटी",
-        "category": "Traditional Ring Bread · Tihar & Dashain Essential",
-        "tagline": "Crisp-on-the-outside, soft-on-the-inside homemade rice-flour ring bread fried to a deep mahogany gold.",
-        "preparation": "Coarsely ground soaked rice is stone-blended with ghee, sugar, cardamom, and ripe banana into a pourable batter, rested, and hand-poured in a continuous ring into hot oil.",
-        "specialty": "Naturally gluten-free and central to Tihar and weddings; its porous crust and delicate sweet cardamom crumb pair effortlessly with spicy alu achar or hot chiya.",
-        "flavor_tags": ["Rice Flour", "Cardamom & Ghee", "Festive Ring", "Crisp & Chewy"]
+        "category": "Festive Ring Bread · Tihar & Dashain Classic",
+        "tagline": "Crispy-edged, pillowy-centered homemade rice-flour ring bread fried to a deep golden mahogany.",
+        "quick_facts": {
+            "taste": "Lightly sweet, aromatic cardamom & ghee",
+            "method": "Hand-poured ring in hot oil/ghee",
+            "pairing": "Spicy alu-tama curry or hot masala chiya",
+            "vibe": "The unmistakable aroma of Tihar festival"
+        },
+        "steps": [
+            "Soak coarse rice overnight and stone-grind into a thick batter with ghee, sugar, crushed green cardamom, and overripe banana.",
+            "Ferment briefly, then scoop by hand and pour in one deft, continuous circular motion directly into bubbling oil.",
+            "Flip with a bamboo skewer (surya) until both sides develop a lacy, blistered golden crust while the core stays soft."
+        ],
+        "specialty": "Naturally gluten-free and shaped like a sacred garland; its crisp honeycomb exterior soaks up hot milk chiya or spicy potato achar like nothing else.",
+        "flavor_tags": ["Stone-Ground Rice", "Cardamom & Ghee", "Tihar Festival", "Crisp Honeycomb"]
     },
     "yomari": {
         "name": "Yomari",
         "nepali": "योमरी",
-        "category": "Newari Heritage Delicacy · Yomari Punhi Harvest Dish",
-        "tagline": "Sculpted fig-shaped steamed rice-dough dumpling filled with molten chaku (caramelized molasses) and toasted sesame.",
-        "preparation": "Freshly harvested new-season rice flour is kneaded with boiling water into a supple dough, hand-pinched into a hollow cone with a pointed tail, filled with chaku or khuwa (milk solids), and steamed.",
-        "specialty": "Prepared by the Newar community of the Kathmandu Valley during the December full moon (Yomari Punhi) to honor Annapurna, the goddess of grains, and ward off winter cold.",
-        "flavor_tags": ["Newari Heritage", "Molten Chaku", "Toasted Sesame", "Winter Harvest"]
+        "category": "Newari Heritage Sweet · Winter Harvest Delicacy",
+        "tagline": "Sculpted fig-shaped rice-dough dumpling filled with molten caramelized chaku and toasted sesame seeds.",
+        "quick_facts": {
+            "taste": "Rich, smoky molasses & nutty sesame",
+            "method": "Hand-sculpted cone steamed over clay pot",
+            "pairing": "Served piping hot on December full moon",
+            "vibe": "Kathmandu Valley Newari culinary art"
+        },
+        "steps": [
+            "Knead freshly harvested new-season rice flour with boiling water into a smooth, elastic snow-white dough.",
+            "Coax a dough ball between oiled fingers into a thin-walled hollow cone with a signature pointed tail.",
+            "Fill with molten chaku (dark sugarcane molasses) and toasted sesame—or sweetened khuwa—seal the crown, and steam until glossy."
+        ],
+        "specialty": "Crafted during Yomari Punhi (December full moon) to celebrate the end of the rice harvest; biting into a warm Yomari releases a burst of liquid caramel chaku.",
+        "flavor_tags": ["Newari Heritage", "Molten Chaku Core", "Toasted Sesame", "Yomari Punhi"]
     },
     "chatpate": {
         "name": "Chatpate",
         "nepali": "चटपटे",
-        "category": "Street Snack · Tangy & Fiery Crunch",
-        "tagline": "An electric, tossed-to-order street mix of puffed rice, crushed dry noodles, roasted peas, fresh herbs, and raw mustard oil.",
-        "preparation": "Bhuja (puffed rice) and crunchy uncooked Wai-Wai noodles are tossed in a deep steel bowl with boiled potato cubes, red onion, cilantro, green chili, lime juice, chat masala, and pungent Tori ko Tel (mustard oil).",
-        "specialty": "Served in a handmade paper cone; the sharp sinus-clearing kick of raw mustard oil combined with citrus and crunch makes it Nepal's most addictive afternoon street snack.",
-        "flavor_tags": ["Mustard Oil Kick", "Crunchy Bhuja", "Lime & Chili", "Street Cone"]
+        "category": "Street Snack · Tangy, Fiery & Crunchy",
+        "tagline": "An electric tossed-to-order street mix of puffed rice, crunchy Wai-Wai noodles, fresh herbs, lime, and raw mustard oil.",
+        "quick_facts": {
+            "taste": "Explosive sour, spicy & pungent",
+            "method": "Flash-tossed in a deep steel bowl",
+            "pairing": "Served in a newspaper cone on the go",
+            "vibe": "Nepal's ultimate afternoon street craving"
+        },
+        "steps": [
+            "Combine crisp bhuja (puffed rice), crushed dry spiced noodles, and roasted peas in a deep stainless-steel mixing bowl.",
+            "Toss with diced boiled potatoes, red onion, fresh cilantro, green chilies, cucumber, and black rock salt (bire nun).",
+            "Finish with a squeeze of fresh lime and a generous drizzle of raw Tori ko Tel (pungent mustard oil), then funnel into a paper cone."
+        ],
+        "specialty": "That unmistakable, sinus-tingling punch of raw Nepali mustard oil hitting fresh lime juice and crunchy noodles—eaten fast before the puffed rice softens!",
+        "flavor_tags": ["Raw Mustard Oil", "Crunchy Wai-Wai", "Bire Nun & Lime", "Paper Cone Street Icon"]
     },
     "jeri": {
         "name": "Jeri",
         "nepali": "जेरी",
-        "category": "Traditional Confection · Morning Sweet",
-        "tagline": "Crisp, pretzel-like fermented wheat spirals fried until golden and soaked in warm saffron-cardamom sugar syrup.",
-        "preparation": "Fermented maida batter is piped through a cloth nozzle in concentric coils into hot oil/ghee, fried crisp, and immediately submerged in hot sugar syrup so the hollow tubes lock in liquid sweetness.",
-        "specialty": "In Nepal, warm Jeri is famously eaten for breakfast wrapped inside flaky Swari (flatbread) alongside a steaming glass of milk chiya.",
-        "flavor_tags": ["Syrup-Soaked", "Crisp Spiral", "Saffron & Cardamom", "Jeri-Swari Classic"]
+        "category": "Traditional Sweet · Morning Mithai Classic",
+        "tagline": "Crisp, pretzel-like fermented wheat coils fried golden and drenched in warm saffron-cardamom sugar syrup.",
+        "quick_facts": {
+            "taste": "Crackling crisp shell & warm liquid honeyed syrup",
+            "method": "Piped spirals fried & syrup-dunked",
+            "pairing": "Wrapped inside flaky Swari with hot chiya",
+            "vibe": "Classic Kathmandu morning breakfast treat"
+        },
+        "steps": [
+            "Whip and ferment a smooth wheat-flour batter until lightly tangy and aerated.",
+            "Pipe concentric pretzel-like spirals through a stitched cloth nozzle directly into hot ghee or oil until crisp and golden.",
+            "Submerge immediately into warm cardamom-saffron sugar syrup for 30 seconds so the hollow coils Drink up the glossy sweetness."
+        ],
+        "specialty": "In Nepal, warm Jeri is famously folded inside a soft, flaky fried flatbread called Swari (Jeri-Swari)—contrasting crackling sweet syrup with savory bread.",
+        "flavor_tags": ["Syrup-Filled Coils", "Saffron & Cardamom", "Jeri-Swari Breakfast", "Crackling Crisp"]
     },
     "samosa": {
         "name": "Samosa",
         "nepali": "समोसा",
-        "category": "Savory Pastry · Teahouse Classic",
-        "tagline": "Flaky tetrahedral pastry crust packed with roasted cumin, green peas, and spiced mashed potatoes.",
-        "preparation": "Shortcrust dough rubbed with oil and ajwain (carom seeds) is folded into a three-dimensional cone, stuffed with spiced potato-pea masala, sealed, and slow-fried at medium heat for a blistered, flaky shell.",
-        "specialty": "A staple of every Nepali mithai pasal (sweet shop), served crushed with chickpea tarkari and tangy tamarind-mint chutney.",
-        "flavor_tags": ["Flaky Pastry", "Ajwain & Cumin", "Potato-Pea Masala", "Teahouse Staple"]
+        "category": "Savory Pastry · Mithai Pasal Staple",
+        "tagline": "Flaky, blistered triangular pastry packed with roasted cumin, green peas, and spiced mashed potatoes.",
+        "quick_facts": {
+            "taste": "Savory, earthy cumin & flaky ajwain crust",
+            "method": "Slow-fried at medium heat for flaky layers",
+            "pairing": "Tangy tamarind chutney & chickpea tarkari",
+            "vibe": "Every Nepali teahouse's golden centerpiece"
+        },
+        "steps": [
+            "Rub wheat flour with warm oil and crushed ajwain (carom seeds) until crumbly, then knead into a stiff, flaky pastry dough.",
+            "Sauté cubed potatoes and green peas with roasted cumin, coriander, ginger, fenugreek, and chili.",
+            "Fold into a three-cornered pyramid, crimp the edge, and slow-fry in medium-low oil for 15 minutes until deeply blistered and crisp."
+        ],
+        "specialty": "Unlike rushed fast-food pastries, authentic Nepali halwai samosas are slow-fried so the crust stays shattering crisp for hours, served with warm chana tarkari.",
+        "flavor_tags": ["Ajwain Shortcrust", "Roasted Cumin Potato", "Tamarind Chutney", "Halwai Classic"]
     },
     "panipuri": {
         "name": "Panipuri",
         "nepali": "पानीपुरी",
-        "category": "Street Food · Crisp Hollow Crisps & Spiced Water",
-        "tagline": "Bite-sized crisp semolina spheres cracked open, stuffed with spiced potato-chickpea mash, and brimmed with tangy tamarind-mint pani.",
-        "preparation": "Paper-thin semolina-wheat rounds are flash-fried until they puff into hollow globes, then thumb-cracked and filled with mashedalu, black chickpeas, timur, and chilled spiced water.",
-        "specialty": "Eaten in a single bite straight from the vendor's hand so the crisp shell, warm potato mash, and cold sour-spicy water burst together.",
-        "flavor_tags": ["Single-Bite Burst", "Tamarind & Mint", "Crisp Semolina", "Street Favorite"]
+        "category": "Street Food · Crisp Globes & Spiced Water",
+        "tagline": "Hollow semolina crisps cracked open, loaded with spiced potato-chickpea mash, and brimmed with icy tamarind-mint pani.",
+        "quick_facts": {
+            "taste": "Cold sour-spicy burst + warm savory mash",
+            "method": "Flash-puffed puris filled to order by hand",
+            "pairing": "Extra sukha puri dusted with chat masala",
+            "vibe": "Interactive street-side flavor explosion"
+        },
+        "steps": [
+            "Roll paper-thin semolina-wheat discs and flash-fry until they puff into crisp, hollow golden spheres.",
+            "Mash boiled potatoes with black chickpeas, red onion, roasted cumin, chili flakes, and fresh coriander.",
+            "Crack the crown of each puri with a thumb, stuff with spiced mash, dunk into chilled mint-tamarind-timur water, and eat in one bite."
+        ],
+        "specialty": "Nepali street vendors spike the potato mash with crushed timur (Sichuan pepper) and roasted dry chili, giving it a distinct Himalayan tingle.",
+        "flavor_tags": ["One-Bite Burst", "Chilled Mint-Tamarind Pani", "Timur Potato Mash", "Street Ritual"]
     },
     "pakauda": {
         "name": "Pakauda",
         "nepali": "पकौडा",
-        "category": "Spiced Fritter · Monsoon & Teatime Snack",
-        "tagline": "Craggy, golden-fried gram-flour fritters loaded with sliced onions, spinach, potato, and whole spices.",
-        "preparation": "Julienne onions, spinach leaves, and potato slivers are tossed with besan (chickpea flour), rice flour (for extra crunch), ajwain, turmeric, and green chilies, then dropped in loose clusters into hot oil.",
-        "specialty": "The irregular, lacy edges fry up shatteringly crisp while the center stays tender—traditionally paired with afternoon masala chiya when monsoon rain hits.",
-        "flavor_tags": ["Besan & Onion", "Lacy Crisp Edges", "Ajwain Spiced", "Chiya Companion"]
+        "category": "Spiced Fritter · Monsoon & Teatime Favorite",
+        "tagline": "Craggy, golden-fried chickpea-flour fritters loaded with caramelized onion slivers, spinach, and whole spices.",
+        "quick_facts": {
+            "taste": "Nutty roasted gram flour & sweet-crispy onion",
+            "method": "Loose clusters fried to lacy golden crunch",
+            "pairing": "Tomato-coriander achar & steaming chiya",
+            "vibe": "Rainy afternoon essential across Nepal"
+        },
+        "steps": [
+            "Slice red onions, potato matchsticks, and fresh spinach leaves, then toss with salt so their natural moisture releases.",
+            "Fold in besan (chickpea flour), a spoon of rice flour for extra crunch, ajwain seeds, turmeric, and chopped green chilies.",
+            "Drop loose, jagged clusters into hot oil and fry until the outer tendrils turn deep mahogany and shatteringly crisp."
+        ],
+        "specialty": "Adding coarse rice flour and ajwain to the chickpea batter creates irregular, lacy edges that crunch loudly while keeping the center tender.",
+        "flavor_tags": ["Lacy Onion Tendrils", "Besan & Rice Flour", "Ajwain Spiced", "Monsoon Companion"]
     },
     "chiya": {
         "name": "Chiya",
         "nepali": "चिया",
-        "category": "Traditional Beverage · Daily Social Ritual",
-        "tagline": "Rich, slow-boiled Nepali milk tea infused with crushed green cardamom, fresh ginger, cloves, and black pepper.",
-        "preparation": "Crush fresh ginger and whole masala spices into simmering water, add strong CTC Assam/Ilam black tea leaves, pour in whole milk, and bring to three rolling boils until caramelized and velvety.",
-        "specialty": "More than a beverage—Chiya is Nepal's social glue, served in small glass tumblers at street corners (chiya pasal) from dawn until dusk.",
-        "flavor_tags": ["Ilam CTC Tea", "Crushed Ginger & Cardamom", "Caramelized Milk", "Daily Ritual"]
+        "category": "Traditional Spiced Milk Tea · Daily Social Glue",
+        "tagline": "Rich, slow-boiled Nepali milk tea infused with freshly crushed green cardamom, ginger, cloves, and Ilam black tea.",
+        "quick_facts": {
+            "taste": "Velvety, caramelized milk & warming ginger-cardamom",
+            "method": "Triple-boiled in a brass or steel saucepan",
+            "pairing": "Selroti, Marie biscuits, or hot samosa",
+            "vibe": "Served in glass tumblers from dawn to dusk"
+        },
+        "steps": [
+            "Pound fresh ginger root, green cardamom pods, cloves, and black peppercorns in a mortar and simmer in water until fragrant.",
+            "Add bold CTC black tea leaves from Ilam and boil until a deep amber liquor develops.",
+            "Pour in rich whole milk and sugar, then ladle and aerate through three rolling boils until creamy and ligeramente caramelized."
+        ],
+        "specialty": "In Nepal, asking 'Chiya khanu bhayo?' (Have you had tea?) is how friendships and conversations begin—poured high into small ridged glass tumblers.",
+        "flavor_tags": ["Ilam CTC Tea", "Crushed Ginger & Cardamom", "Triple-Boiled Milk", "Chiya Pasal Culture"]
     }
 }
 
@@ -139,8 +239,22 @@ MODEL_DISPLAY_NAMES = {
     }
 }
 
+# Hand-picked default row offsets per class in test.csv so chiya, pakauda, and selroti display distinct, appetizing photos
+PREFERRED_SAMPLE_OFFSETS = {
+    "chatpate": 0,
+    "chiya": 4,
+    "dalbhat": 1,
+    "jeri": 2,
+    "momo": 0,
+    "pakauda": 5,
+    "panipuri": 1,
+    "samosa": 2,
+    "selroti": 6,
+    "yomari": 1
+}
+
 app = FastAPI(
-    title="Parikar 2.0 — Nepali Culinary Vision Lab API",
+    title="Parikar 2.0 — Nepali Food Classifier API",
     description="Multi-model ONNX Runtime inference engine for 10 Nepali dishes & beverages by Sijan Pandey",
     version="2.0.0"
 )
@@ -153,7 +267,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load ONNX sessions at startup
 ORT_SESSIONS: Dict[str, ort.InferenceSession] = {}
 ONNX_MANIFEST: Dict = {}
 
@@ -182,7 +295,6 @@ def on_startup():
 
 def preprocess_pil_image(img: Image.Image, img_size: int = 224) -> np.ndarray:
     img = img.convert("RGB")
-    # Match torchvision eval_transform: Resize(255) -> CenterCrop(224) -> ToTensor -> Normalize
     target_resize = int(img_size * 1.14)
     w, h = img.size
     if w < h:
@@ -201,8 +313,8 @@ def preprocess_pil_image(img: Image.Image, img_size: int = 224) -> np.ndarray:
     mean = np.array([0.485, 0.456, 0.406], dtype=np.float32)
     std = np.array([0.229, 0.224, 0.225], dtype=np.float32)
     arr = (arr - mean) / std
-    arr = np.transpose(arr, (2, 0, 1))  # CHW
-    return np.expand_dims(arr, axis=0)  # NCHW
+    arr = np.transpose(arr, (2, 0, 1))
+    return np.expand_dims(arr, axis=0)
 
 
 def softmax_np(logits: np.ndarray) -> np.ndarray:
@@ -286,7 +398,7 @@ def get_lab_info():
         })
 
     return {
-        "project": "Parikar 2.0 — Nepali Culinary Vision Lab",
+        "project": "Parikar 2.0 — Nepali Food Classifier",
         "author": "Sijan Pandey",
         "github": "https://github.com/devsijanpandey12/Parikar_2.0_Nepali_Food_Classifier_Final",
         "dataset_summary": {
@@ -304,7 +416,7 @@ def get_lab_info():
 
 
 @app.get("/api/samples")
-def get_sample_specimens():
+def get_sample_specimens(offset: int = 0):
     test_csv = SPLITS_DIR / "test.csv"
     if not test_csv.exists():
         return {"samples": []}
@@ -315,7 +427,9 @@ def get_sample_specimens():
     for cls_key in CLASSES:
         sub = df[df["class_name"] == cls_key]
         if len(sub) > 0:
-            row = sub.iloc[0]
+            base_idx = PREFERRED_SAMPLE_OFFSETS.get(cls_key, 0)
+            chosen_idx = (base_idx + offset) % len(sub)
+            row = sub.iloc[chosen_idx]
             samples.append({
                 "class_key": cls_key,
                 "name": DISH_CATALOG[cls_key]["name"],
@@ -365,11 +479,8 @@ async def predict_image(
 
     results = [run_single_model_inference(a, input_tensor) for a in archs_to_run]
 
-    # Determine primary prediction (ConvNeXt-Tiny if 'all' is run, or the single selected model)
     primary = results[0]
     dish_info = DISH_CATALOG[primary["predicted_class"]]
-
-    # Check agreement across models if multiple ran
     predicted_classes = [r["predicted_class"] for r in results]
     unanimous = len(set(predicted_classes)) == 1
 
@@ -382,11 +493,8 @@ async def predict_image(
     }
 
 
-# Mount experiments folder for confusion matrix & benchmark charts
 if EXPERIMENTS_DIR.exists():
     app.mount("/experiments", StaticFiles(directory=str(EXPERIMENTS_DIR)), name="experiments")
 
-# Mount frontend static files at root (after /api routes) so relative paths work on both FastAPI and GitHub Pages
 FRONTEND_DIR.mkdir(exist_ok=True)
 app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
-

@@ -3,9 +3,14 @@ const API_BASE = "";
 let selectedModel = "all";
 let currentUploadFile = null;
 let currentSamplePath = null;
+let currentPreviewSrc = "";
+let sampleShuffleOffset = 0;
 let mediaStream = null;
 
 // DOM Elements
+const themeToggleBtn = document.getElementById("themeToggleBtn");
+const themeIcon = document.getElementById("themeIcon");
+const shuffleSamplesBtn = document.getElementById("shuffleSamplesBtn");
 const modelToggles = document.querySelectorAll(".model-toggle");
 const selectedModelHint = document.getElementById("selectedModelHint");
 const tabUploadBtn = document.getElementById("tabUploadBtn");
@@ -36,19 +41,56 @@ const consensusBadge = document.getElementById("consensusBadge");
 const dishCategory = document.getElementById("dishCategory");
 const dishName = document.getElementById("dishName");
 const dishNepali = document.getElementById("dishNepali");
+const floatingDishImg = document.getElementById("floatingDishImg");
 const primaryModelLabel = document.getElementById("primaryModelLabel");
 const primaryConfidence = document.getElementById("primaryConfidence");
 const primaryLatency = document.getElementById("primaryLatency");
 const dishTagline = document.getElementById("dishTagline");
-const dishPreparation = document.getElementById("dishPreparation");
+
+const factTaste = document.getElementById("factTaste");
+const factMethod = document.getElementById("factMethod");
+const factPairing = document.getElementById("factPairing");
+const factVibe = document.getElementById("factVibe");
+const dishStepsRow = document.getElementById("dishStepsRow");
 const dishSpecialty = document.getElementById("dishSpecialty");
+const findNearMeBtn = document.getElementById("findNearMeBtn");
 const dishFlavorTags = document.getElementById("dishFlavorTags");
+
 const modelResultsContainer = document.getElementById("modelResultsContainer");
 const totalInferenceTime = document.getElementById("totalInferenceTime");
 
-// Matrix Viewer Tabs
+// Matrix Viewer Tabs & Collapsible Drawer
 const matrixTabs = document.querySelectorAll(".matrix-tab");
 const matrixViewerImg = document.getElementById("matrixViewerImg");
+const toggleMatrixDrawerBtn = document.getElementById("toggleMatrixDrawerBtn");
+const matrixDrawerBtnText = document.getElementById("matrixDrawerBtnText");
+const matrixDrawerContent = document.getElementById("matrixDrawerContent");
+
+if (toggleMatrixDrawerBtn && matrixDrawerContent) {
+  toggleMatrixDrawerBtn.addEventListener("click", () => {
+    const isOpen = matrixDrawerContent.classList.toggle("open");
+    toggleMatrixDrawerBtn.classList.toggle("open", isOpen);
+    toggleMatrixDrawerBtn.setAttribute("aria-expanded", String(isOpen));
+    matrixDrawerBtnText.textContent = isOpen
+      ? "📊 Hide Confusion Matrices & Convergence Curves"
+      : "📊 Show Confusion Matrices & Convergence Curves";
+  });
+}
+
+// Inertial Floating Smooth Scroll (Lenis)
+if (typeof window.Lenis !== "undefined") {
+  const lenis = new window.Lenis({
+    duration: 1.15,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+    wheelMultiplier: 0.95
+  });
+  function raf(time) {
+    lenis.raf(time);
+    requestAnimationFrame(raf);
+  }
+  requestAnimationFrame(raf);
+}
 
 const MODEL_HINTS = {
   all: "Running all 3 architectures head-to-head",
@@ -56,6 +98,47 @@ const MODEL_HINTS = {
   efficientnet_v2_s: "Single model: EfficientNetV2-S (20.2M · 100% Test Top-3)",
   swin_t: "Single model: Swin-Tiny Vision Transformer (27.5M)"
 };
+
+// 0. Theme Toggle & Scroll Reveal Observer
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener("click", () => {
+    const html = document.documentElement;
+    const next = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", next);
+    themeIcon.textContent = next === "dark" ? "☀" : "☾";
+  });
+}
+
+function initScrollAnimations() {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+        }
+      });
+    },
+    { threshold: 0.12 }
+  );
+
+  document.querySelectorAll(".reveal-up, .arch-card").forEach((el) => observer.observe(el));
+}
+
+function animateNumber(el, targetValue, suffix = "%", duration = 460) {
+  const start = performance.now();
+  function tick(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = (targetValue * eased).toFixed(2);
+    el.textContent = `${current}${suffix}`;
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      el.textContent = `${targetValue.toFixed(2)}${suffix}`;
+    }
+  }
+  requestAnimationFrame(tick);
+}
 
 // 1. Model Selector Toggles
 modelToggles.forEach((btn) => {
@@ -127,7 +210,9 @@ function handleSelectedFile(file) {
 
   const reader = new FileReader();
   reader.onload = (ev) => {
-    imagePreview.src = ev.target.result;
+    currentPreviewSrc = ev.target.result;
+    imagePreview.src = currentPreviewSrc;
+    floatingDishImg.src = currentPreviewSrc;
     previewWrapper.classList.add("visible");
     dropzonePrompt.classList.add("hidden");
   };
@@ -188,11 +273,11 @@ runInferenceBtn.addEventListener("click", () => {
 // 6. Execute Prediction against FastAPI Backend
 async function executePrediction() {
   if (!currentUploadFile && !currentSamplePath) {
-    alert("Please select a sample dish on the left, upload a photo, or capture a frame from your camera first.");
+    alert("Please select a sample dish above, upload a photo, or capture a frame from your camera first.");
     return;
   }
 
-  runInferenceBtn.textContent = "RUNNING ONNX TENSOR PIPELINE...";
+  runInferenceBtn.textContent = "Classifying...";
   runInferenceBtn.disabled = true;
 
   const formData = new FormData();
@@ -216,9 +301,9 @@ async function executePrediction() {
     renderPredictionOutput(data);
   } catch (err) {
     console.error("Prediction error:", err);
-    consensusBadge.textContent = "INFERENCE ERROR";
+    consensusBadge.textContent = "Inference Error";
   } finally {
-    runInferenceBtn.textContent = "RUN CLASSIFICATION PIPELINE →";
+    runInferenceBtn.textContent = "Run Classification →";
     runInferenceBtn.disabled = false;
   }
 }
@@ -231,28 +316,54 @@ function renderPredictionOutput(data) {
   // Consensus badge
   if (runs.length > 1) {
     if (data.unanimous_agreement) {
-      consensusBadge.textContent = `CONSENSUS: ${runs.length}/${runs.length} MODELS AGREE`;
-      consensusBadge.style.background = "#1D6342";
+      consensusBadge.textContent = `${runs.length}/${runs.length} Models Agree`;
     } else {
-      consensusBadge.textContent = "SPLIT VERDICT ACROSS ARCHITECTURES";
-      consensusBadge.style.background = "#B88014";
+      consensusBadge.textContent = "Split Verdict Across Models";
     }
   } else {
-    consensusBadge.textContent = `SINGLE MODEL // ${primary.title.toUpperCase()}`;
-    consensusBadge.style.background = "#161513";
+    consensusBadge.textContent = `${primary.title}`;
   }
 
-  // Culinary Card
+  // Update floating dish image beside dish title
+  if (currentPreviewSrc) {
+    floatingDishImg.src = currentPreviewSrc;
+  }
+
+  // Culinary Spotlight Card
   dishCategory.textContent = dish.category;
   dishName.textContent = dish.name;
   dishNepali.textContent = dish.nepali;
   primaryModelLabel.textContent = `${primary.title} CONFIDENCE`;
-  primaryConfidence.textContent = `${primary.confidence.toFixed(2)}%`;
-  primaryLatency.textContent = `${primary.latency_ms.toFixed(2)} ms on CPU`;
+  animateNumber(primaryConfidence, primary.confidence, "%", 460);
+  primaryLatency.textContent = `${primary.latency_ms.toFixed(1)} ms`;
 
   dishTagline.textContent = dish.tagline;
-  dishPreparation.textContent = dish.preparation;
-  dishSpecialty.textContent = dish.specialty;
+
+  // Quick Facts 4-tile grid
+  const qf = dish.quick_facts || {};
+  factTaste.textContent = qf.taste || "—";
+  factMethod.textContent = qf.method || "—";
+  factPairing.textContent = qf.pairing || "—";
+  factVibe.textContent = qf.vibe || "—";
+
+  // 3 Numbered Recipe Steps
+  dishStepsRow.innerHTML = "";
+  (dish.steps || []).forEach((stepText, idx) => {
+    const stepEl = document.createElement("div");
+    stepEl.className = "step-card";
+    stepEl.innerHTML = `
+      <span class="step-num">STEP 0${idx + 1}</span>
+      <p>${stepText}</p>
+    `;
+    dishStepsRow.appendChild(stepEl);
+  });
+
+  dishSpecialty.textContent = dish.specialty || "—";
+
+  // Update Google Maps "Where Can I Get It?" link
+  const mapQuery = encodeURIComponent(`Nepali ${dish.name} restaurant near me`);
+  findNearMeBtn.href = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+  findNearMeBtn.textContent = `📍 Where Can I Get ${dish.name}? (Maps ↗)`;
 
   dishFlavorTags.innerHTML = "";
   (dish.flavor_tags || []).forEach((tag) => {
@@ -264,13 +375,14 @@ function renderPredictionOutput(data) {
 
   // Total Latency
   const sumMs = runs.reduce((acc, r) => acc + r.latency_ms, 0);
-  totalInferenceTime.textContent = `${runs.length} model(s) executed in ${sumMs.toFixed(2)} ms total (ONNX CPU)`;
+  totalInferenceTime.textContent = `${runs.length} model(s) ran in ${sumMs.toFixed(1)} ms total`;
 
-  // Render Model Head-to-Head Cards
+  // Render Model Head-to-Head Cards with clean 3-chip specs footer
   modelResultsContainer.innerHTML = "";
-  runs.forEach((run) => {
+  runs.forEach((run, i) => {
     const card = document.createElement("div");
     card.className = `model-run-card ${run.arch === "convnext_tiny" ? "hero-model" : ""}`;
+    card.style.animationDelay = `${i * 70}ms`;
 
     const top3BarsHtml = run.top3
       .map(
@@ -281,7 +393,7 @@ function renderPredictionOutput(data) {
             <strong>${item.confidence.toFixed(2)}%</strong>
           </div>
           <div class="prob-track">
-            <div class="prob-fill" style="width: ${Math.max(item.confidence, 1.5)}%"></div>
+            <div class="prob-fill" data-target-width="${Math.max(item.confidence, 2)}%"></div>
           </div>
         </div>
       `
@@ -296,7 +408,7 @@ function renderPredictionOutput(data) {
           <div class="model-arch-title">${run.title}</div>
           <div class="model-arch-family">${run.family}</div>
         </div>
-        <span class="latency-pill">${run.latency_ms.toFixed(2)} ms</span>
+        <span class="latency-pill">${run.latency_ms.toFixed(1)} ms</span>
       </div>
 
       <div class="model-verdict-row">
@@ -308,19 +420,35 @@ function renderPredictionOutput(data) {
         ${top3BarsHtml}
       </div>
 
-      <div class="model-meta-footer">
-        <span>PARAMS: ${paramsM} (${run.size_mb} MB)</span>
-        <span>TEST TOP-1: ${run.benchmark_test_top1}%</span>
+      <div class="model-specs-grid">
+        <div class="spec-chip">
+          <span class="spec-chip-lbl">PARAMS</span>
+          <span class="spec-chip-val">${paramsM}</span>
+        </div>
+        <div class="spec-chip">
+          <span class="spec-chip-lbl">ONNX SIZE</span>
+          <span class="spec-chip-val">${run.size_mb} MB</span>
+        </div>
+        <div class="spec-chip">
+          <span class="spec-chip-lbl">TEST TOP-1</span>
+          <span class="spec-chip-val">${run.benchmark_test_top1}%</span>
+        </div>
       </div>
     `;
     modelResultsContainer.appendChild(card);
   });
+
+  requestAnimationFrame(() => {
+    modelResultsContainer.querySelectorAll(".prob-fill").forEach((bar) => {
+      bar.style.width = bar.getAttribute("data-target-width");
+    });
+  });
 }
 
-// 7. Load Sample Specimens & Run Initial Demo Specimen
-async function initLab() {
+// 7. Load Sample Specimens & Shuffle Support
+async function loadSamples(offset = 0, autoSelectFirst = false) {
   try {
-    const res = await fetch(`${API_BASE}/api/samples`);
+    const res = await fetch(`${API_BASE}/api/samples?offset=${offset}`);
     const data = await res.json();
     const samples = data.samples || [];
 
@@ -337,7 +465,9 @@ async function initLab() {
         btn.classList.add("active");
         currentUploadFile = null;
         currentSamplePath = s.rel_path;
+        currentPreviewSrc = s.image_url;
         imagePreview.src = s.image_url;
+        floatingDishImg.src = s.image_url;
         previewWrapper.classList.add("visible");
         dropzonePrompt.classList.add("hidden");
         tabUploadBtn.click();
@@ -345,17 +475,18 @@ async function initLab() {
       });
       specimenGrid.appendChild(btn);
 
-      // Automatically load 'momo' (or first specimen) on startup so the lab looks alive immediately
-      if (s.class_key === "momo" || (idx === 0 && !currentSamplePath)) {
+      if (autoSelectFirst && (s.class_key === "momo" || (idx === 0 && !currentSamplePath))) {
         currentSamplePath = s.rel_path;
+        currentPreviewSrc = s.image_url;
         btn.classList.add("active");
         imagePreview.src = s.image_url;
+        floatingDishImg.src = s.image_url;
         previewWrapper.classList.add("visible");
         dropzonePrompt.classList.add("hidden");
       }
     });
 
-    if (currentSamplePath) {
+    if (autoSelectFirst && currentSamplePath) {
       executePrediction();
     }
   } catch (err) {
@@ -363,13 +494,27 @@ async function initLab() {
   }
 }
 
+if (shuffleSamplesBtn) {
+  shuffleSamplesBtn.addEventListener("click", () => {
+    sampleShuffleOffset += 1;
+    loadSamples(sampleShuffleOffset, false);
+  });
+}
+
 // 8. Matrix Viewer Tabs
 matrixTabs.forEach((tab) => {
   tab.addEventListener("click", () => {
     matrixTabs.forEach((t) => t.classList.remove("active"));
     tab.classList.add("active");
-    matrixViewerImg.src = tab.dataset.img;
+    matrixViewerImg.style.opacity = "0.2";
+    setTimeout(() => {
+      matrixViewerImg.src = tab.dataset.img;
+      matrixViewerImg.style.opacity = "1";
+    }, 120);
   });
 });
 
-window.addEventListener("DOMContentLoaded", initLab);
+window.addEventListener("DOMContentLoaded", () => {
+  initScrollAnimations();
+  loadSamples(0, true);
+});
