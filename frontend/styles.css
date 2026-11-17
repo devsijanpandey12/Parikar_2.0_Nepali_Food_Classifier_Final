@@ -935,6 +935,13 @@ body {
   box-shadow: 0 10px 24px rgba(245, 158, 11, 0.25);
 }
 
+.ood-feedback-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 .ood-simple-reasons {
   list-style: none;
   padding: 0;
@@ -963,6 +970,91 @@ body {
   color: #FBBF24;
   font-weight: 800;
   font-size: 1.1rem;
+}
+
+.ood-tech-toggle-btn {
+  align-self: flex-start;
+  border-color: rgba(245, 158, 11, 0.42);
+  color: #FBBF24;
+  background: rgba(245, 158, 11, 0.08);
+  font-weight: 600;
+}
+
+:root[data-theme="light"] .ood-tech-toggle-btn {
+  color: #B45309;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.ood-tech-drawer {
+  margin-top: 0.25rem;
+  padding: 1rem 1.15rem;
+  border-radius: 14px;
+  background: var(--bg-subtle);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.ood-tech-header {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #FBBF24;
+}
+
+.ood-tech-pills-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ood-tech-reason-pill {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.74rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #FCA5A5;
+}
+
+:root[data-theme="light"] .ood-tech-reason-pill {
+  background: rgba(239, 68, 68, 0.08);
+  color: #B91C1C;
+}
+
+.ood-tech-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+}
+
+.ood-tech-chip {
+  background: rgba(15, 18, 24, 0.45);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+:root[data-theme="light"] .ood-tech-chip {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.ood-tech-lbl {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text-muted);
+}
+
+.ood-tech-val {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--text);
 }
 
 .model-run-card.ood-flagged {

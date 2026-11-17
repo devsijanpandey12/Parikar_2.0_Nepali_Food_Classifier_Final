@@ -323,7 +323,7 @@ function renderPredictionOutput(data) {
   }
 
   if (!isRecognized) {
-    // CLEAN, USER-FRIENDLY UNRECOGNIZED DISH STATE (HIDE MODEL COMPARISON & TECHNICAL METRICS)
+    // CLEAN, USER-FRIENDLY UNRECOGNIZED DISH STATE BY DEFAULT + TOGGLE FOR FULL TECHNICAL METRICS
     if (culinaryCardEl) culinaryCardEl.classList.add("ood-rejected");
     if (telemetryPanel) telemetryPanel.classList.add("hidden");
     if (confidenceMeterBox) confidenceMeterBox.classList.add("hidden");
@@ -333,6 +333,9 @@ function renderPredictionOutput(data) {
     dishCategory.textContent = "OUTSIDE SUPPORTED MENU";
     dishName.textContent = "Dish Not Recognized";
     dishNepali.textContent = "पहिचान भएन";
+    primaryModelLabel.textContent = `${primary.title} CLOSEST FALLBACK`;
+    animateNumber(primaryConfidence, primary.confidence, "%", 460);
+    primaryLatency.textContent = `${primary.latency_ms.toFixed(1)} ms`;
     dishTagline.textContent =
       ood.summary_message ||
       "We couldn't match this photo to any of our 10 supported Nepali dishes (Chatpate, Chiya, Dal Bhat, Jeri, Momo, Pakauda, Panipuri, Samosa, Selroti, or Yomari). Here is why:";
@@ -348,8 +351,11 @@ function renderPredictionOutput(data) {
     }
     if (compactBarRight) compactBarRight.classList.add("hidden");
 
-    // List all simple, plain-English reasons why the photo was rejected
+    // 1. Simple plain-English reasons shown by default
     dishFlavorTags.innerHTML = "";
+    const oodContainer = document.createElement("div");
+    oodContainer.className = "ood-feedback-wrap";
+
     const simpleList = document.createElement("ul");
     simpleList.className = "ood-simple-reasons";
     (ood.reasons || []).forEach((reason) => {
@@ -357,8 +363,81 @@ function renderPredictionOutput(data) {
       li.textContent = reason;
       simpleList.appendChild(li);
     });
-    dishFlavorTags.appendChild(simpleList);
-    return;
+    oodContainer.appendChild(simpleList);
+
+    // 2. Toggle Button to reveal all technical reasons, values, thresholds, and Model Comparison panel
+    const techToggleBtn = document.createElement("button");
+    techToggleBtn.type = "button";
+    techToggleBtn.className = "btn btn-ghost btn-sm ood-tech-toggle-btn";
+    techToggleBtn.innerHTML = `<span>🔬 Show Technical Rejection Reasons &amp; Model Metrics</span> <span class="drawer-chevron">▾</span>`;
+
+    // 3. Technical Drawer (hidden until toggle is pressed)
+    const techDrawer = document.createElement("div");
+    techDrawer.className = "ood-tech-drawer hidden";
+
+    const techReasons = ood.technical_reasons && ood.technical_reasons.length > 0 ? ood.technical_reasons : ood.reasons || [];
+    const techReasonsHtml = techReasons
+      .map((tr) => `<div class="ood-tech-reason-pill">⚠️ ${tr}</div>`)
+      .join("");
+
+    const m = ood.metrics || {};
+    const th = ood.thresholds || {};
+    const sem = ood.semantic_domain || {};
+    const cosVal =
+      typeof primary.centroid_cosine_sim === "number" ? primary.centroid_cosine_sim.toFixed(4) : "—";
+
+    techDrawer.innerHTML = `
+      <div class="ood-tech-header">3-LAYER OPEN-SET GATE DIAGNOSTICS &amp; THRESHOLD VALUES</div>
+      <div class="ood-tech-pills-list">${techReasonsHtml}</div>
+      <div class="ood-tech-metrics-grid">
+        <div class="ood-tech-chip">
+          <span class="ood-tech-lbl">CLOSEST SOFTMAX FALLBACK</span>
+          <strong class="ood-tech-val">${primary.predicted_name} (${primary.confidence.toFixed(2)}% | min ${th.min_confidence_pct ?? 78}%)</strong>
+        </div>
+        <div class="ood-tech-chip">
+          <span class="ood-tech-lbl">SHANNON ENTROPY H(p)/ln(10)</span>
+          <strong class="ood-tech-val">${primary.normalized_entropy.toFixed(4)} (ceiling ≤ ${th.max_normalized_entropy ?? 0.36})</strong>
+        </div>
+        <div class="ood-tech-chip">
+          <span class="ood-tech-lbl">TOP-1 VS TOP-2 MARGIN</span>
+          <strong class="ood-tech-val">${primary.margin.toFixed(2)}% (min ≥ ${th.min_margin_pct ?? 60}%)</strong>
+        </div>
+        <div class="ood-tech-chip">
+          <span class="ood-tech-lbl">MAX LOGIT &amp; HELMHOLTZ ENERGY</span>
+          <strong class="ood-tech-val">z_max = ${primary.max_logit.toFixed(3)} (≥ ${th.min_max_logit ?? 3.35}) · E = ${primary.energy_score.toFixed(3)}</strong>
+        </div>
+        <div class="ood-tech-chip">
+          <span class="ood-tech-lbl">768-D CENTROID COSINE SIM</span>
+          <strong class="ood-tech-val">S_cos = ${cosVal} (min ≥ ${th.min_centroid_cosine_sim ?? 0.85})</strong>
+        </div>
+        <div class="ood-tech-chip">
+          <span class="ood-tech-lbl">IMAGENET CULINARY DOMAIN MASS</span>
+          <strong class="ood-tech-val">${m.culinary_domain_mass_pct ?? "—"}% (min ≥ ${th.min_culinary_domain_mass_pct ?? 38}% · Top: '${sem.top_imagenet_label ?? "—"}' ${sem.top_imagenet_conf_pct ?? 0}%)</strong>
+        </div>
+      </div>
+    `;
+
+    techToggleBtn.addEventListener("click", () => {
+      const isHidden = techDrawer.classList.toggle("hidden");
+      if (!isHidden) {
+        techToggleBtn.innerHTML = `<span>🔬 Hide Technical Rejection Reasons &amp; Model Metrics</span> <span class="drawer-chevron">▴</span>`;
+        if (telemetryPanel) telemetryPanel.classList.remove("hidden");
+        if (confidenceMeterBox) confidenceMeterBox.classList.remove("hidden");
+        requestAnimationFrame(() => {
+          modelResultsContainer.querySelectorAll(".prob-fill").forEach((bar) => {
+            bar.style.width = bar.getAttribute("data-target-width");
+          });
+        });
+      } else {
+        techToggleBtn.innerHTML = `<span>🔬 Show Technical Rejection Reasons &amp; Model Metrics</span> <span class="drawer-chevron">▾</span>`;
+        if (telemetryPanel) telemetryPanel.classList.add("hidden");
+        if (confidenceMeterBox) confidenceMeterBox.classList.add("hidden");
+      }
+    });
+
+    oodContainer.appendChild(techToggleBtn);
+    oodContainer.appendChild(techDrawer);
+    dishFlavorTags.appendChild(oodContainer);
   } else {
     // IN-DISTRIBUTION / RECOGNIZED NEPALI DISH STATE
     if (culinaryCardEl) culinaryCardEl.classList.remove("ood-rejected");
