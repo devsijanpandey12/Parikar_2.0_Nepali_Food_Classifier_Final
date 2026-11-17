@@ -68,24 +68,36 @@ body {
 .glow-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(130px);
-  opacity: 0.22;
+  filter: blur(115px);
+  opacity: 0.44;
+  animation: ambientDrift 12s ease-in-out infinite alternate;
 }
 
 .orb-1 {
-  width: 520px;
-  height: 520px;
-  background: var(--accent);
-  top: -180px;
-  left: -120px;
+  width: 640px;
+  height: 640px;
+  background: radial-gradient(circle, var(--accent), var(--accent-2));
+  top: -150px;
+  left: -100px;
 }
 
 .orb-2 {
-  width: 460px;
-  height: 460px;
-  background: var(--emerald);
-  bottom: -160px;
-  right: -100px;
+  width: 560px;
+  height: 560px;
+  background: radial-gradient(circle, var(--accent-2), var(--emerald));
+  bottom: -140px;
+  right: -80px;
+  opacity: 0.36;
+  animation-delay: -6s;
+}
+
+@keyframes ambientDrift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(40px, 28px) scale(1.1);
+  }
 }
 
 /* SCROLL REVEAL ANIMATIONS */
@@ -784,16 +796,32 @@ body {
 }
 
 .btn-maps {
-  background: var(--emerald-soft);
-  color: var(--emerald);
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.18);
+  color: #34D399;
+  border: 1.5px solid rgba(16, 185, 129, 0.65);
   font-weight: 700;
   white-space: nowrap;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.38), inset 0 0 10px rgba(16, 185, 129, 0.15);
+  animation: mapsPulseGlow 2.4s ease-in-out infinite;
+}
+
+:root[data-theme="light"] .btn-maps {
+  color: #047857;
 }
 
 .btn-maps:hover {
   background: var(--emerald);
   color: #fff;
+  box-shadow: 0 0 26px rgba(16, 185, 129, 0.75);
+}
+
+@keyframes mapsPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.35), inset 0 0 8px rgba(16, 185, 129, 0.12);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(16, 185, 129, 0.68), 0 0 8px rgba(255, 107, 53, 0.25), inset 0 0 12px rgba(16, 185, 129, 0.22);
+  }
 }
 
 .btn-ghost {
