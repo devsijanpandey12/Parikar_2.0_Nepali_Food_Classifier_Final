@@ -1289,55 +1289,55 @@ body {
   color: var(--text);
 }
 
-/* BENCHMARKS SHOWCASE SECTION */
+/* BENCHMARKS SHOWCASE SECTION (COMPACT & BALANCED) */
 .benchmarks-showcase {
   position: relative;
   z-index: 1;
   width: 100%;
-  padding: 2rem 4.5vw 3.5rem;
+  padding: 1.25rem 4.5vw 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.25rem;
 }
 
 .showcase-copy {
-  font-size: 0.98rem;
+  font-size: 0.88rem;
   color: var(--text-secondary);
-  max-width: 82ch;
-  margin-top: 0.5rem;
+  max-width: 78ch;
+  margin-top: 0.35rem;
 }
 
 .math-inline {
   font-family: 'Space Mono', monospace;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   background: var(--bg-subtle);
   color: var(--accent);
-  padding: 0.14rem 0.45rem;
-  border-radius: 6px;
+  padding: 0.1rem 0.38rem;
+  border-radius: 5px;
   border: 1px solid var(--border);
 }
 
 .arch-showcase-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
+  gap: 1.1rem;
 }
 
 .arch-card {
   background: var(--bg-card);
   backdrop-filter: blur(16px);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 1.75rem;
+  border-radius: 16px;
+  padding: 1.15rem 1.35rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0.85rem;
   box-shadow: var(--shadow);
-  transition: transform 0.25s ease, border-color 0.25s ease;
+  transition: transform 0.22s ease, border-color 0.22s ease;
 }
 
 .arch-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
   border-color: var(--border-hover);
 }
 
@@ -1353,27 +1353,27 @@ body {
 
 .arch-rank {
   font-family: 'Space Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.64rem;
   font-weight: 700;
   color: var(--accent);
 }
 
 .arch-card-header h3 {
-  font-size: 1.45rem;
+  font-size: 1.18rem;
   font-weight: 800;
-  margin-top: 0.2rem;
+  margin-top: 0.1rem;
 }
 
 .arch-type {
-  font-size: 0.8rem;
+  font-size: 0.74rem;
   color: var(--text-muted);
 }
 
 .arch-epoch {
   font-family: 'Space Mono', monospace;
-  font-size: 0.72rem;
-  padding: 0.25rem 0.6rem;
-  border-radius: 8px;
+  font-size: 0.66rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
   background: var(--bg-subtle);
   border: 1px solid var(--border);
 }
@@ -1381,18 +1381,18 @@ body {
 .arch-metrics-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .arch-metric-bar .bar-label {
   display: flex;
   justify-content: space-between;
-  font-size: 0.82rem;
-  margin-bottom: 0.25rem;
+  font-size: 0.76rem;
+  margin-bottom: 0.18rem;
 }
 
 .arch-metric-bar .bar-bg {
-  height: 8px;
+  height: 6px;
   border-radius: 999px;
   background: var(--bg-subtle);
   overflow: hidden;
@@ -1411,11 +1411,12 @@ body {
 }
 
 .arch-note {
-  font-size: 0.85rem;
+  font-size: 0.76rem;
   color: var(--text-secondary);
   margin-top: auto;
-  padding-top: 0.75rem;
+  padding-top: 0.55rem;
   border-top: 1px solid var(--border);
+  line-height: 1.4;
 }
 
 /* COLLAPSIBLE MATRIX VIEWER WITH HOVER POP EFFECT */
