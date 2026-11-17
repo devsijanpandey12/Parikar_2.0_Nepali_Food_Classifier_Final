@@ -155,6 +155,32 @@ Unlike rigid objects (cars, airplanes, buildings) that have fixed geometric silh
 
 ---
 
+### Experiment 2: `EfficientNetV2-S` (`20,190,298` Parameters — RTX 4050 6GB, `bfloat16`)
+- **Training Setup & Observations:**
+  - In Epoch 1 (frozen backbone warmup), `EfficientNetV2-S` started at `86.16%` Val Top-1 (`85.44%` Macro-F1) vs. `ConvNeXt-Tiny`'s `97.58%` because `EfficientNetV2-S`'s Fused-MBConv features are more specialized to ImageNet class scales until unfrozen.
+  - Once unfrozen in Phase 2 (Epoch 2), Val Top-1 jumped `+12.02%` in a single epoch to **`98.18%`**, peaking at **Epoch 5 (`98.99%` Val Top-1, `99.04%` Val Balanced Acc, `99.01%` Val Macro-F1)**.
+
+#### Epoch-by-Epoch Progression (`experiments/efficientnet_v2_s/training_history.json`)
+
+| Epoch | Training Phase | Train Loss | Train Acc | Val Loss | Val Top-1 Acc | Val Top-3 Acc | Val Balanced Acc | Val Macro-F1 | Time (s) |
+| :---: | :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | Phase 1 (Head Warmup) | 1.2403 | 74.32% | 0.6574 | 86.16% | 97.07% | 86.82% | 85.44% | 94.8s |
+| 2 | Phase 2 (Full Fine-Tune) | 0.6532 | 95.58% | 0.1385 | 98.18% | 99.70% | 97.66% | 97.81% | 80.9s |
+| 3 | Phase 2 (Full Fine-Tune) | 0.5560 | 98.47% | 0.1504 | 98.38% | 99.39% | 98.52% | 98.15% | 83.7s |
+| 4 | Phase 2 (Full Fine-Tune) | 0.5358 | 99.09% | 0.1338 | 98.59% | 99.80% | 98.64% | 98.65% | 99.1s |
+| **5** | **Phase 2 (Best Checkpoint)** | **0.5177** | **99.65%** | **0.1288** | **98.99%** | **99.60%** | **99.04%** | **99.01%** | **110.1s** |
+| 6 | Phase 2 (Full Fine-Tune) | 0.5146 | 99.71% | 0.1227 | 98.99% | 99.70% | 99.01% | 98.96% | 99.5s |
+
+#### Held-Out Test Set Evaluation (`990` Unseen Images — `experiments/efficientnet_v2_s/evaluation_report.json`)
+- **Test Top-1 Accuracy:** **`99.39%`** (`984 / 990` correct)
+- **Test Top-3 Accuracy:** **`100.00%`** (`990 / 990` correct!)
+- **Test Balanced Accuracy (Macro Recall):** **`99.32%`**
+- **Test Macro Precision:** **`99.16%`**
+- **Test Macro F1-Score:** **`99.24%`**
+- **Test Inference Speed:** **`18.70 ms / image`** (`27.4%` fewer parameters than `ConvNeXt-Tiny`)
+
+---
+
 ## 8. Chronological Action & Experiment Log
 - **[2026-11-17]** Audited workspace structure (`10,025` raw images across `10` classes).
 - **[2026-11-17]** Verified `hydro` Anaconda environment: `Python 3.11.15`, `PyTorch 2.13.0+cu130`, `Torchvision 0.28.0+cu130` on **NVIDIA GeForce RTX 4050 Laptop GPU (6.0 GB VRAM)**.
@@ -164,4 +190,5 @@ Unlike rigid objects (cars, airplanes, buildings) that have fixed geometric silh
   - Produced `9,904` unique verified images split stratified 80/10/10 into `splits/train.csv` (`7,924`), `splits/val.csv` (`990`), and `splits/test.csv` (`990`).
 - **[2026-11-17]** Built two-stage transfer learning & evaluation script (`src/train_and_eval.py`) supporting `convnext_tiny`, `efficientnet_v2_s`, `swin_t`, and `vit_b_16` with `bfloat16` mixed precision and full evaluation metrics.
 - **[2026-11-17]** Trained & evaluated Model 1 (`convnext_tiny`) for 6 epochs on RTX 4050 GPU: achieved **`99.29%` Val Top-1 (`99.12%` Val Macro-F1)** and **`99.49%` Test Top-1 (`99.51%` Test Macro-F1, `100%` F1 on minority classes `chatpate` and `yomari`)**.
+- **[2026-11-17]** Trained & evaluated Model 2 (`efficientnet_v2_s`) for 6 epochs on RTX 4050 GPU: peaked at Epoch 5 with **`98.99%` Val Top-1 (`99.01%` Val Macro-F1)** and achieved **`99.39%` Test Top-1, `100.00%` Test Top-3, `99.24%` Test Macro-F1, and `18.70 ms/img` latency**.
 

@@ -1,0 +1,469 @@
+{
+  "architecture": "efficientnet_v2_s",
+  "total_parameters": 20190298,
+  "device": "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "best_epoch": 5,
+  "epochs_trained": 6,
+  "history": [
+    {
+      "epoch": 1,
+      "phase": "Phase 1 (Frozen Backbone Head Warmup)",
+      "train_loss": 1.2403,
+      "train_acc": 0.7432,
+      "val_loss": 0.6574,
+      "val_top1_acc": 0.8616,
+      "val_top3_acc": 0.9707,
+      "val_balanced_acc": 0.8682,
+      "val_macro_f1": 0.8544,
+      "epoch_seconds": 94.8
+    },
+    {
+      "epoch": 2,
+      "phase": "Phase 2 (Full Fine-Tuning)",
+      "train_loss": 0.6532,
+      "train_acc": 0.9558,
+      "val_loss": 0.1385,
+      "val_top1_acc": 0.9818,
+      "val_top3_acc": 0.997,
+      "val_balanced_acc": 0.9766,
+      "val_macro_f1": 0.9781,
+      "epoch_seconds": 80.9
+    },
+    {
+      "epoch": 3,
+      "phase": "Phase 2 (Full Fine-Tuning)",
+      "train_loss": 0.556,
+      "train_acc": 0.9847,
+      "val_loss": 0.1504,
+      "val_top1_acc": 0.9838,
+      "val_top3_acc": 0.9939,
+      "val_balanced_acc": 0.9852,
+      "val_macro_f1": 0.9815,
+      "epoch_seconds": 83.7
+    },
+    {
+      "epoch": 4,
+      "phase": "Phase 2 (Full Fine-Tuning)",
+      "train_loss": 0.5358,
+      "train_acc": 0.9909,
+      "val_loss": 0.1338,
+      "val_top1_acc": 0.9859,
+      "val_top3_acc": 0.998,
+      "val_balanced_acc": 0.9864,
+      "val_macro_f1": 0.9865,
+      "epoch_seconds": 99.1
+    },
+    {
+      "epoch": 5,
+      "phase": "Phase 2 (Full Fine-Tuning)",
+      "train_loss": 0.5177,
+      "train_acc": 0.9965,
+      "val_loss": 0.1288,
+      "val_top1_acc": 0.9899,
+      "val_top3_acc": 0.996,
+      "val_balanced_acc": 0.9904,
+      "val_macro_f1": 0.9901,
+      "epoch_seconds": 110.1
+    },
+    {
+      "epoch": 6,
+      "phase": "Phase 2 (Full Fine-Tuning)",
+      "train_loss": 0.5146,
+      "train_acc": 0.9971,
+      "val_loss": 0.1227,
+      "val_top1_acc": 0.9899,
+      "val_top3_acc": 0.997,
+      "val_balanced_acc": 0.9901,
+      "val_macro_f1": 0.9896,
+      "epoch_seconds": 99.5
+    }
+  ],
+  "best_val_metrics": {
+    "top1_accuracy": 0.9899,
+    "top3_accuracy": 0.996,
+    "balanced_accuracy_macro_recall": 0.9904,
+    "macro_precision": 0.9899,
+    "macro_f1": 0.9901,
+    "weighted_f1": 0.9899,
+    "per_class": {
+      "chatpate": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 34
+      },
+      "chiya": {
+        "precision": 0.9909,
+        "recall": 1.0,
+        "f1": 0.9954,
+        "support": 109
+      },
+      "dalbhat": {
+        "precision": 0.9839,
+        "recall": 1.0,
+        "f1": 0.9919,
+        "support": 61
+      },
+      "jeri": {
+        "precision": 1.0,
+        "recall": 0.9918,
+        "f1": 0.9959,
+        "support": 122
+      },
+      "momo": {
+        "precision": 0.991,
+        "recall": 0.9865,
+        "f1": 0.9887,
+        "support": 222
+      },
+      "pakauda": {
+        "precision": 0.9873,
+        "recall": 0.975,
+        "f1": 0.9811,
+        "support": 80
+      },
+      "panipuri": {
+        "precision": 0.9556,
+        "recall": 1.0,
+        "f1": 0.9773,
+        "support": 86
+      },
+      "samosa": {
+        "precision": 1.0,
+        "recall": 0.9845,
+        "f1": 0.9922,
+        "support": 129
+      },
+      "selroti": {
+        "precision": 0.9905,
+        "recall": 0.9905,
+        "f1": 0.9905,
+        "support": 105
+      },
+      "yomari": {
+        "precision": 1.0,
+        "recall": 0.9762,
+        "f1": 0.988,
+        "support": 42
+      }
+    },
+    "confusion_matrix": [
+      [
+        34,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        109,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        61,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        121,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        0,
+        219,
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        78,
+        1,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        86,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        127,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        104,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        41
+      ]
+    ],
+    "loss": 0.1288,
+    "inference_ms_per_image": 21.52
+  },
+  "test_metrics": {
+    "top1_accuracy": 0.9939,
+    "top3_accuracy": 1.0,
+    "balanced_accuracy_macro_recall": 0.9932,
+    "macro_precision": 0.9916,
+    "macro_f1": 0.9924,
+    "weighted_f1": 0.9939,
+    "per_class": {
+      "chatpate": {
+        "precision": 0.9714,
+        "recall": 1.0,
+        "f1": 0.9855,
+        "support": 34
+      },
+      "chiya": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 110
+      },
+      "dalbhat": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 61
+      },
+      "jeri": {
+        "precision": 1.0,
+        "recall": 0.9918,
+        "f1": 0.9959,
+        "support": 122
+      },
+      "momo": {
+        "precision": 0.9911,
+        "recall": 1.0,
+        "f1": 0.9955,
+        "support": 222
+      },
+      "pakauda": {
+        "precision": 1.0,
+        "recall": 0.9875,
+        "f1": 0.9937,
+        "support": 80
+      },
+      "panipuri": {
+        "precision": 0.9775,
+        "recall": 1.0,
+        "f1": 0.9886,
+        "support": 87
+      },
+      "samosa": {
+        "precision": 1.0,
+        "recall": 0.9766,
+        "f1": 0.9881,
+        "support": 128
+      },
+      "selroti": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "support": 104
+      },
+      "yomari": {
+        "precision": 0.9762,
+        "recall": 0.9762,
+        "f1": 0.9762,
+        "support": 42
+      }
+    },
+    "confusion_matrix": [
+      [
+        34,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        110,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        61,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        121,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        222,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        79,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        87,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1,
+        125,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        104,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        41
+      ]
+    ],
+    "loss": 0.1145,
+    "inference_ms_per_image": 18.7
+  }
+}
