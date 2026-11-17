@@ -1,0 +1,44 @@
+{
+  "convnext_tiny": {
+    "onnx_file": "models_onnx/convnext_tiny.onnx",
+    "size_mb": 106.24,
+    "parameters": 27827818,
+    "best_epoch": 6,
+    "cpu_latency_ms": 27.01,
+    "max_abs_diff_vs_pytorch": 1e-06,
+    "test_metrics": {
+      "top1_accuracy": 0.9949,
+      "top3_accuracy": 0.999,
+      "balanced_accuracy": 0.9951,
+      "macro_f1": 0.9951
+    }
+  },
+  "efficientnet_v2_s": {
+    "onnx_file": "models_onnx/efficientnet_v2_s.onnx",
+    "size_mb": 76.87,
+    "parameters": 20190298,
+    "best_epoch": 5,
+    "cpu_latency_ms": 18.45,
+    "max_abs_diff_vs_pytorch": 1e-06,
+    "test_metrics": {
+      "top1_accuracy": 0.9939,
+      "top3_accuracy": 1.0,
+      "balanced_accuracy": 0.9932,
+      "macro_f1": 0.9924
+    }
+  },
+  "swin_t": {
+    "onnx_file": "models_onnx/swin_t.onnx",
+    "size_mb": 107.29,
+    "parameters": 27527044,
+    "best_epoch": 3,
+    "cpu_latency_ms": 35.75,
+    "max_abs_diff_vs_pytorch": 0.0,
+    "test_metrics": {
+      "top1_accuracy": 0.9788,
+      "top3_accuracy": 0.999,
+      "balanced_accuracy": 0.9804,
+      "macro_f1": 0.9798
+    }
+  }
+}
