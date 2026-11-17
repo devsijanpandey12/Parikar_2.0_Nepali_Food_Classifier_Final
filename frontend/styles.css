@@ -935,27 +935,34 @@ body {
   box-shadow: 0 10px 24px rgba(245, 158, 11, 0.25);
 }
 
-.flavor-tag.ood-reason-tag {
-  background: rgba(239, 68, 68, 0.12);
-  border-color: rgba(239, 68, 68, 0.38);
-  color: #FCA5A5;
+.ood-simple-reasons {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
 }
 
-:root[data-theme="light"] .flavor-tag.ood-reason-tag {
-  background: rgba(239, 68, 68, 0.1);
-  color: #B91C1C;
+.ood-simple-reasons li {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
 }
 
-.flavor-tag.ood-metric-tag {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.71rem;
-  background: rgba(245, 158, 11, 0.12);
-  border-color: rgba(245, 158, 11, 0.35);
-  color: #FCD34D;
-}
-
-:root[data-theme="light"] .flavor-tag.ood-metric-tag {
-  color: #92400E;
+.ood-simple-reasons li::before {
+  content: "•";
+  color: #FBBF24;
+  font-weight: 800;
+  font-size: 1.1rem;
 }
 
 .model-run-card.ood-flagged {

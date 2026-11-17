@@ -314,6 +314,8 @@ function renderPredictionOutput(data) {
   const isRecognized = data.is_recognized !== false && ood.is_recognized !== false;
   const culinaryCardEl = document.getElementById("culinaryCard");
   const compactBarRight = document.querySelector(".compact-bar-Right");
+  const telemetryPanel = document.querySelector(".telemetry-panel");
+  const confidenceMeterBox = document.querySelector(".confidence-meter-box");
 
   // Update floating dish image beside dish title
   if (currentPreviewSrc) {
@@ -321,20 +323,19 @@ function renderPredictionOutput(data) {
   }
 
   if (!isRecognized) {
-    // OUT-OF-DISTRIBUTION / UNRECOGNIZED DISH OR OBJECT STATE
+    // CLEAN, USER-FRIENDLY UNRECOGNIZED DISH STATE (HIDE MODEL COMPARISON & TECHNICAL METRICS)
     if (culinaryCardEl) culinaryCardEl.classList.add("ood-rejected");
+    if (telemetryPanel) telemetryPanel.classList.add("hidden");
+    if (confidenceMeterBox) confidenceMeterBox.classList.add("hidden");
     consensusBadge.classList.add("ood-badge");
-    consensusBadge.textContent = "⚠️ Unrecognized / Outside 10 Classes";
+    consensusBadge.textContent = "Not Recognized";
 
-    dishCategory.textContent = "OUT-OF-DISTRIBUTION · OPEN-SET GATE TRIGGERED";
-    dishName.textContent = ood.summary_title || "Unrecognized Dish or Object";
-    dishNepali.textContent = ood.summary_nepali || "अज्ञात परिकार";
-    primaryModelLabel.textContent = `${primary.title} CLOSEST FALLBACK`;
-    animateNumber(primaryConfidence, primary.confidence, "%", 460);
-    primaryLatency.textContent = `${primary.latency_ms.toFixed(1)} ms`;
+    dishCategory.textContent = "OUTSIDE SUPPORTED MENU";
+    dishName.textContent = "Dish Not Recognized";
+    dishNepali.textContent = "पहिचान भएन";
     dishTagline.textContent =
       ood.summary_message ||
-      `This photo does not confidently match any of the 10 trained Nepali dishes. Closest visual fallback was ${primary.predicted_name} (${primary.confidence.toFixed(1)}%).`;
+      "We couldn't match this photo to any of our 10 supported Nepali dishes (Chatpate, Chiya, Dal Bhat, Jeri, Momo, Pakauda, Panipuri, Samosa, Selroti, or Yomari). Here is why:";
 
     // Collapse dish prep drawer and hide recipe/Google Maps buttons for unrecognized objects
     if (dishCollapsibleBody) dishCollapsibleBody.classList.remove("open");
@@ -347,24 +348,22 @@ function renderPredictionOutput(data) {
     }
     if (compactBarRight) compactBarRight.classList.add("hidden");
 
-    // Render OOD diagnostic reason pills + entropy/logit telemetry pill
+    // List all simple, plain-English reasons why the photo was rejected
     dishFlavorTags.innerHTML = "";
+    const simpleList = document.createElement("ul");
+    simpleList.className = "ood-simple-reasons";
     (ood.reasons || []).forEach((reason) => {
-      const span = document.createElement("span");
-      span.className = "flavor-tag ood-reason-tag";
-      span.textContent = `⚠️ ${reason}`;
-      dishFlavorTags.appendChild(span);
+      const li = document.createElement("li");
+      li.textContent = reason;
+      simpleList.appendChild(li);
     });
-
-    if (typeof primary.normalized_entropy === "number") {
-      const metricSpan = document.createElement("span");
-      metricSpan.className = "flavor-tag ood-metric-tag";
-      metricSpan.textContent = `Entropy H: ${primary.normalized_entropy.toFixed(2)} · Margin: ${primary.margin.toFixed(1)}% · Max Logit: ${primary.max_logit.toFixed(2)}`;
-      dishFlavorTags.appendChild(metricSpan);
-    }
+    dishFlavorTags.appendChild(simpleList);
+    return;
   } else {
     // IN-DISTRIBUTION / RECOGNIZED NEPALI DISH STATE
     if (culinaryCardEl) culinaryCardEl.classList.remove("ood-rejected");
+    if (telemetryPanel) telemetryPanel.classList.remove("hidden");
+    if (confidenceMeterBox) confidenceMeterBox.classList.remove("hidden");
     consensusBadge.classList.remove("ood-badge");
     if (compactBarRight) compactBarRight.classList.remove("hidden");
 

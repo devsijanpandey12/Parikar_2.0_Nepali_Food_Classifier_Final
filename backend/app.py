@@ -425,15 +425,13 @@ def evaluate_semantic_domain(input_tensor: np.ndarray) -> Dict:
     culinary_mass_pct = round(float(np.sum(sem_probs[ALLOWED_IMAGENET_INDICES])) * 100.0, 2)
 
     reason = None
+    nice_label = top_label.replace("_", " ").title()
     if top_label in EXPLICIT_OUTSIDE_FOODS and top_conf_pct >= OOD_THRESHOLDS["max_outside_food_top1_pct"]:
-        reason = f"Detected Outside Non-Nepali Food ('{top_label}' at {top_conf_pct:.1f}%)"
+        reason = f"Looks like a different food item ({nice_label}) rather than one of our 10 Nepali dishes"
     elif top_idx not in ALLOWED_IMAGENET_INDICES and top_conf_pct >= OOD_THRESHOLDS["max_non_culinary_top1_pct"]:
-        reason = f"Detected Non-Nepali / Non-Food Object ('{top_label}' at {top_conf_pct:.1f}%)"
+        reason = f"Doesn't look like food — appears to be an everyday object or scene ({nice_label})"
     elif culinary_mass_pct < OOD_THRESHOLDS["min_culinary_domain_mass_pct"]:
-        reason = (
-            f"Outside Culinary Domain (Culinary Mass {culinary_mass_pct:.1f}% < "
-            f"{OOD_THRESHOLDS['min_culinary_domain_mass_pct']:.0f}%, Top Concept: '{top_label}')"
-        )
+        reason = "Doesn't look like a clear plate or cup of Nepali food"
 
     return {
         "enabled": True,
@@ -561,26 +559,19 @@ def evaluate_ood_gate(results: List[Dict], input_tensor: Optional[np.ndarray] = 
     if primary.get("centroid_cosine_sim") is not None and (
         primary["centroid_cosine_sim"] < OOD_THRESHOLDS["min_centroid_cosine_sim"]
     ):
-        reasons.append(
-            f"Low 768-D Feature Centroid Similarity ({primary['centroid_cosine_sim']:.2f} < {OOD_THRESHOLDS['min_centroid_cosine_sim']:.2f})"
-        )
+        reasons.append("The visual shape, texture, and colors don't match any of our 10 Nepali dishes")
 
-    if primary["confidence"] < OOD_THRESHOLDS["min_confidence_pct"]:
-        reasons.append(
-            f"Low Top-1 Confidence ({primary['confidence']:.1f}% < {OOD_THRESHOLDS['min_confidence_pct']:.0f}%)"
-        )
-    if primary["normalized_entropy"] > OOD_THRESHOLDS["max_normalized_entropy"]:
-        reasons.append(
-            f"High Predictive Entropy (H = {primary['normalized_entropy']:.2f} > {OOD_THRESHOLDS['max_normalized_entropy']:.2f})"
-        )
-    if primary["margin"] < OOD_THRESHOLDS["min_margin_pct"]:
-        reasons.append(
-            f"Ambiguous Class Margin ({primary['margin']:.1f}% < {OOD_THRESHOLDS['min_margin_pct']:.0f}%)"
-        )
-    if primary["max_logit"] < OOD_THRESHOLDS["min_max_logit"]:
-        reasons.append(
-            f"Weak Logit Activation ({primary['max_logit']:.2f} < {OOD_THRESHOLDS['min_max_logit']:.2f})"
-        )
+    if (
+        primary["confidence"] < OOD_THRESHOLDS["min_confidence_pct"]
+        or primary["max_logit"] < OOD_THRESHOLDS["min_max_logit"]
+    ):
+        reasons.append("Low match confidence — the AI is not sure enough to identify a Nepali dish here")
+
+    if (
+        primary["normalized_entropy"] > OOD_THRESHOLDS["max_normalized_entropy"]
+        or primary["margin"] < OOD_THRESHOLDS["min_margin_pct"]
+    ):
+        reasons.append("Unclear match — no single Nepali dish clearly stands out in this photo")
 
     pred_classes = [r["predicted_class"] for r in results]
     distinct_preds = len(set(pred_classes))
@@ -589,35 +580,27 @@ def evaluate_ood_gate(results: List[Dict], input_tensor: Optional[np.ndarray] = 
 
     if len(results) > 1:
         if distinct_preds == len(results):
-            reasons.append("Complete 3-Model Disagreement (CNN vs. ViT voted 3 different classes)")
+            reasons.append("All 3 AI models guessed different dishes and could not agree")
         elif distinct_preds > 1 and (
             mean_conf < OOD_THRESHOLDS["ensemble_split_min_mean_conf_pct"]
             or min_conf < OOD_THRESHOLDS["ensemble_split_min_single_conf_pct"]
         ):
-            reasons.append(
-                f"Split Model Verdict with Low Ensemble Confidence (mean {mean_conf:.1f}%, min {min_conf:.1f}%)"
-            )
+            reasons.append("Our 3 AI models disagreed on what this photo is")
         elif (
             mean_conf < OOD_THRESHOLDS["ensemble_unanimous_min_mean_conf_pct"]
             or min_conf < OOD_THRESHOLDS["ensemble_unanimous_min_single_conf_pct"]
         ):
-            reasons.append(
-                f"Weak Ensemble Consensus Confidence (mean {mean_conf:.1f}%, min {min_conf:.1f}%)"
-            )
+            reasons.append("Overall match strength across the 3 AI models was too low")
 
     is_recognized = len(reasons) == 0
     supported_list = "Chatpate, Chiya, Dal Bhat, Jeri, Momo, Pakauda, Panipuri, Samosa, Selroti, or Yomari"
 
     if is_recognized:
-        summary_msg = (
-            f"Verified in-distribution match for {primary['predicted_name']} "
-            f"(H = {primary['normalized_entropy']:.2f}, Max Logit = {primary['max_logit']:.2f})."
-        )
+        summary_msg = f"Matched with {primary['predicted_name']}."
     else:
         summary_msg = (
-            f"This image does not match any of the 10 trained Nepali food categories "
-            f"({supported_list}). Closest closed-set softmax fallback was {primary['predicted_name']} "
-            f"({primary['confidence']:.1f}%), rejected by the 3-Layer Open-Set OOD Gate."
+            f"We couldn't match this photo to any of our 10 supported Nepali dishes ({supported_list}). "
+            f"Here is why it was not recognized:"
         )
 
     return {
