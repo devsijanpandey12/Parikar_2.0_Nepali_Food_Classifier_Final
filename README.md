@@ -14,28 +14,28 @@ End-to-end computer vision pipeline and real-time multi-model studio for classif
 
 ```mermaid
 flowchart TD
-    subgraph P1["1. Data Hygiene & Training Pipeline (Local RTX 4050 GPU)"]
-        A["Raw Dataset (10,025 Images across 10 Classes)"] --> B["MD5 Deduplication (-121 Exact Duplicates) -> 9,904 Unique Images"]
+    subgraph P1["1. Data Hygiene & GPU Training Pipeline (NVIDIA RTX 4050 · bfloat16)"]
+        A["Raw Dataset: 10,025 Images (10 Nepali Food Classes)"] --> B["MD5 Byte-Level Deduplication (-121 Exact Duplicates) -> 9,904 Unique Images"]
         B --> C["Stratified 80/10/10 Split (7,924 Train / 990 Val / 990 Test)"]
-        C --> D["Two-Stage Transfer Learning (Sqrt Class Weights + Label Smoothing ε=0.1)"]
-        D --> E1["ConvNeXt-Tiny (99.49% Test Top-1)"]
-        D --> E2["EfficientNetV2-S (99.39% Test Top-1)"]
-        D --> E3["Swin-Tiny (97.88% Test Top-1)"]
-        E1 & E2 & E3 --> F["ONNX Runtime Export + 768-D Feature Centroids (models_onnx/)"]
+        C --> D["Two-Stage Transfer Learning (224x224x3 RGB · Sqrt Weights w_c · Label Smoothing ε=0.1)"]
+        D --> E1["ConvNeXt-Tiny (224x224 · 7x7 Depthwise CNN · 27.8M Params · 106.2 MB ONNX · 99.49% Top-1)"]
+        D --> E2["EfficientNetV2-S (224x224 · Fused-MBConv CNN · 20.2M Params · 76.9 MB ONNX · 99.39% Top-1)"]
+        D --> E3["Swin-Tiny (224x224 · Shifted-Window ViT · 27.5M Params · 107.3 MB ONNX · 97.88% Top-1)"]
+        E1 & E2 & E3 --> F["ONNX Runtime Opsets + 768-D Feature Centroids (models_onnx/)"]
     end
 
-    subgraph P2["2. Containerization & Microsoft Azure Cloud Deployment"]
-        F --> G["Docker Build (Python 3.11-slim + FastAPI + 4 ONNX Models + 10 Sample Photos)"]
+    subgraph P2["2. Containerization & Microsoft Azure Cloud Hosting"]
+        F --> G["Docker Image (Python 3.11-slim + FastAPI + 4 ONNX Models + 10 Pinned Samples)"]
         G --> H["Azure Container Registry (parikarsijan12.azurecr.io/parikar:v2)"]
-        H --> I["Azure Container Apps (parikar-app · East Asia · 2 vCPU / 4 GiB RAM · Scale-to-Zero)"]
+        H --> I["Azure Container Apps (parikar-app · East Asia · 2.0 vCPU / 4.0 GiB RAM · Scale-to-Zero)"]
     end
 
-    subgraph P3["3. Live User Inference & 3-Layer Open-Set OOD Gate"]
-        J["User Uploads Photo / Snaps Camera / Clicks Sample Dish"] --> K["Browser Canvas Resize (<= 512px JPEG) -> POST /api/predict"]
+    subgraph P3["3. Live Inference & 3-Layer Open-Set OOD Gate (< 300ms Cloud CPU)"]
+        J["User Photo Upload / WebRTC Camera / Sample Dish"] --> K["Client Canvas Resize (<= 512px JPEG) -> FastAPI Preprocess (Resize 256 -> Center-Crop 224x224x3 FP32)"]
         K --> I
         I --> L{"3-Layer Open-Set OOD Gate"}
-        L -- "Pass (Valid Nepali Dish)" --> M["Display Dish Profile, Recipe, Google Maps & 3-Model Comparison"]
-        L -- "Reject (Non-Food / Outside Food / Low Confidence)" --> N["Display Clean 'Dish Not Recognized' Alert + Optional Technical Metrics Toggle"]
+        L -- "Layer 1: MobileNetV3-Small (224x224, Culinary Mass >= 38%)\nLayer 2: 768-D Feature Cosine Sim >= 0.85\nLayer 3: Conf >= 78%, Entropy <= 0.36, 3-Model Consensus" --> M["Recognized: Dish Profile, Recipe Steps, Google Maps & 3-Model Telemetry"]
+        L -- "Rejected (Non-Food / Outside Food / Low Confidence)" --> N["Unrecognized: Plain-English Alert + Collapsible Technical Metrics Toggle"]
     end
 ```
 
