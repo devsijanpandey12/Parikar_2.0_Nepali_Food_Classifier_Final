@@ -1,0 +1,36 @@
+# Git, IDE, and Python caches
+.git
+.gitignore
+__pycache__/
+*.py[cod]
+*$py.class
+.vscode/
+.idea/
+docs/
+src/
+
+# Exclude large PyTorch training checkpoints (only ONNX Runtime models are needed in production)
+experiments/**/*.pt
+experiments/**/*.pth
+
+# Exclude all 10,025 raw training images EXCEPT the 10 pinned sample photos used in the UI strip
+chatpate/*
+!chatpate/000035.jpg
+chiya/*
+!chiya/chiya_00041.jpg
+dalbhat/*
+!dalbhat/dalbhat_00034.jpg
+jeri/*
+!jeri/jeri (16).jpg
+momo/*
+!momo/momo_0058.jpg
+pakauda/*
+!pakauda/200.jpg
+panipuri/*
+!panipuri/483.jpg
+samosa/*
+!samosa/125.jpg
+selroti/*
+!selroti/selroti (325).jpg
+yomari/*
+!yomari/000008.jpg
