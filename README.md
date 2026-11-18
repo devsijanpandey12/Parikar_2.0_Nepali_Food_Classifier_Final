@@ -1,11 +1,14 @@
-# Parikar 2.0 — Nepali Food Classifier
+# Parikar 2.0 — Nepali Food Classifier | Hosted on Microsoft Azure
 
 **Created & Engineered by Sijan Pandey**
 
 [![Try the Live App](https://img.shields.io/badge/Try_the_Live_App-Parikar_2.0_on_Azure-FF6B35?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/)
+[![Hosted on Microsoft Azure](https://img.shields.io/badge/Hosted_on-Microsoft_Azure-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/)
 [![FastAPI Swagger Docs](https://img.shields.io/badge/API_Docs-Swagger_UI-10B981?style=for-the-badge&logo=fastapi&logoColor=white)](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/docs)
 
-> ### 🚀 Try It Out Live: **[https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/)**
+> ### 🚀 Try It Out Live — Hosted on Microsoft Azure
+> 🌐 **Live Web App (Microsoft Azure Container Apps):** **[https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/)**
+>
 > Snap or upload any dish photo to watch **ConvNeXt-Tiny**, **EfficientNetV2-S**, and **Swin-Tiny** classify Nepali food in real time—no setup needed.
 
 End-to-end computer vision pipeline and real-time multi-model studio for classifying **10 traditional and street Nepali dishes & beverages** (`momo`, `dalbhat`, `selroti`, `yomari`, `chatpate`, `jeri`, `samosa`, `panipuri`, `pakauda`, and `chiya`), built for cloud deployment on **Microsoft Azure for Students** + **GitHub**.
