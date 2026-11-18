@@ -2,11 +2,14 @@
 
 **Created & Engineered by Sijan Pandey**
 
-🌐 **Live Cloud App (Microsoft Azure Container Apps):** **[https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/)**
+[![Try the Live App](https://img.shields.io/badge/Try_the_Live_App-Parikar_2.0_on_Azure-FF6B35?style=for-the-badge&logo=microsoftazure&logoColor=white)](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/)
+[![FastAPI Swagger Docs](https://img.shields.io/badge/API_Docs-Swagger_UI-10B981?style=for-the-badge&logo=fastapi&logoColor=white)](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/docs)
+
+> **Want to see it recognize Momo, Dal Bhat, or Chatpate in real time?** Snap or upload any food photo in the live studio—no setup needed: **[Launch Parikar 2.0 Live Studio →](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/)**
 
 End-to-end computer vision pipeline and real-time multi-model studio for classifying **10 traditional and street Nepali dishes & beverages** (`momo`, `dalbhat`, `selroti`, `yomari`, `chatpate`, `jeri`, `samosa`, `panipuri`, `pakauda`, and `chiya`), built for cloud deployment on **Microsoft Azure for Students** + **GitHub**.
 
-![Parikar 2.0 Web Studio](docs/website_preview.jpg)
+[![Parikar 2.0 Web Studio](docs/website_preview.jpg)](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/)
 
 ---
 
