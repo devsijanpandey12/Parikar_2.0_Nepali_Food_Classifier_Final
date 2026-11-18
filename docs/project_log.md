@@ -306,6 +306,9 @@ When `/api/predict` returns `is_recognized: false` (`ood_gate.status == "unrecog
   - `efficientnet_v2_s.onnx`: `76.87 MB` | CPU Latency: **`18.45 ms`**
   - `swin_t.onnx`: `107.29 MB` | CPU Latency: **`35.75 ms`**
 - **[2026-11-17]** Built FastAPI multi-model inference backend (`backend/app.py`), Azure `Dockerfile`, and bespoke archival/editorial web interface (`frontend/index.html`, `frontend/styles.css`, `frontend/app.js`) featuring live camera capture, 1-click test specimen strip, single/all-3 model toggles, live latency telemetry, and cultural culinary cards, credited to **Sijan Pandey**.
-- **[2026-11-17]** Designed, calibrated, and implemented the **Multi-Signal Open-Set / Out-of-Distribution (OOD) Rejection Gate** (`evaluate_ood_gate` in `backend/app.py` + OOD warning state in `frontend/app.js` and `frontend/styles.css`) combining Label-Smoothed Confidence, Top-1/Top-2 Margin, Normalized Shannon Entropy, Pre-Softmax Logit Energy, and 3-Architecture (CNN vs. ViT) Consensus.
+- **[2026-11-17]** Designed, calibrated, and implemented the **3-Layer Open-Set / Out-of-Distribution (OOD) Rejection Gate** (`evaluate_ood_gate` in `backend/app.py` + dual plain-English and collapsible technical breakdown UI in `frontend/app.js` and `frontend/styles.css`).
+- **[2026-11-18]** Containerized and deployed **Parikar 2.0** to **Microsoft Azure Container Apps** (`eastasia` region, `parikar-rg` resource group, `parikarsijan12.azurecr.io/parikar:v1`, `1.0 vCPU / 2.0 GiB RAM`):
+  - **Live Cloud URL:** `https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/`
+
 
 

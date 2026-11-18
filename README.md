@@ -2,6 +2,8 @@
 
 **Created & Engineered by Sijan Pandey**
 
+🌐 **Live Cloud App (Microsoft Azure Container Apps):** **[https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/)**
+
 End-to-end computer vision pipeline and real-time multi-model studio for classifying **10 traditional and street Nepali dishes & beverages** (`momo`, `dalbhat`, `selroti`, `yomari`, `chatpate`, `jeri`, `samosa`, `panipuri`, `pakauda`, and `chiya`), built for cloud deployment on **Microsoft Azure for Students** + **GitHub**.
 
 ![Parikar 2.0 Web Studio](docs/website_preview.jpg)
