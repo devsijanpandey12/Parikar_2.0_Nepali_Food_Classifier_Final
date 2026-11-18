@@ -201,20 +201,66 @@ fileInput.addEventListener("change", () => {
   }
 });
 
-function handleSelectedFile(file) {
-  currentUploadFile = file;
+function compressImageFile(file, maxDim = 512, quality = 0.9) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const objUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objUrl);
+      let { width, height } = img;
+      if (width <= maxDim && height <= maxDim && file.size <= 120 * 1024) {
+        resolve(file);
+        return;
+      }
+      if (width < height) {
+        if (width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        }
+      } else {
+        if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          resolve(new File([blob], "upload_resized.jpg", { type: "image/jpeg" }));
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objUrl);
+      resolve(file);
+    };
+    img.src = objUrl;
+  });
+}
+
+async function handleSelectedFile(file) {
   currentSamplePath = null;
   document.querySelectorAll(".specimen-thumb").forEach((t) => t.classList.remove("active"));
 
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    currentPreviewSrc = ev.target.result;
-    imagePreview.src = currentPreviewSrc;
-    floatingDishImg.src = currentPreviewSrc;
-    previewWrapper.classList.add("visible");
-    dropzonePrompt.classList.add("hidden");
-  };
-  reader.readAsDataURL(file);
+  const previewUrl = URL.createObjectURL(file);
+  currentPreviewSrc = previewUrl;
+  imagePreview.src = previewUrl;
+  floatingDishImg.src = previewUrl;
+  previewWrapper.classList.add("visible");
+  dropzonePrompt.classList.add("hidden");
+
+  setLoadingVerdictState();
+  currentUploadFile = await compressImageFile(file, 512, 0.9);
   executePrediction();
 }
 
@@ -268,6 +314,37 @@ runInferenceBtn.addEventListener("click", () => {
   executePrediction();
 });
 
+let activeInferenceId = 0;
+
+function setLoadingVerdictState() {
+  const culinaryCardEl = document.getElementById("culinaryCard");
+  const compactBarRight = document.querySelector(".compact-bar-Right");
+  const telemetryPanel = document.querySelector(".telemetry-panel");
+  const confidenceMeterBox = document.querySelector(".confidence-meter-box");
+
+  if (culinaryCardEl) {
+    culinaryCardEl.classList.remove("ood-rejected");
+    culinaryCardEl.classList.add("is-processing");
+  }
+  if (compactBarRight) compactBarRight.classList.add("hidden");
+  if (confidenceMeterBox) confidenceMeterBox.classList.add("hidden");
+  if (telemetryPanel) telemetryPanel.classList.add("hidden");
+  if (dishCollapsibleBody) dishCollapsibleBody.classList.remove("open");
+
+  consensusBadge.classList.remove("ood-badge");
+  consensusBadge.textContent = "⏳ Processing...";
+  dishCategory.textContent = "ANALYZING PHOTO · PLEASE WAIT";
+  dishName.textContent = "Processing Image...";
+  dishNepali.textContent = "पहिचान हुँदैछ...";
+  dishTagline.textContent = "Clearing previous result and running your photo through our 3 AI vision models...";
+  dishFlavorTags.innerHTML = `
+    <div class="processing-indicator-pill">
+      <span class="processing-spinner"></span>
+      <span>Running ConvNeXt-Tiny, EfficientNetV2-S &amp; Swin-Tiny + Open-Set Gate...</span>
+    </div>
+  `;
+}
+
 // 6. Execute Prediction against FastAPI Backend
 async function executePrediction() {
   if (!currentUploadFile && !currentSamplePath) {
@@ -275,6 +352,8 @@ async function executePrediction() {
     return;
   }
 
+  const reqId = ++activeInferenceId;
+  setLoadingVerdictState();
   runInferenceBtn.textContent = "Classifying...";
   runInferenceBtn.disabled = true;
 
@@ -296,13 +375,21 @@ async function executePrediction() {
       throw new Error(errText);
     }
     const data = await res.json();
+    if (reqId !== activeInferenceId) return;
     renderPredictionOutput(data);
   } catch (err) {
+    if (reqId !== activeInferenceId) return;
     console.error("Prediction error:", err);
     consensusBadge.textContent = "Inference Error";
+    dishName.textContent = "Connection Error";
+    dishTagline.textContent = "Could not reach the classification server. Please try again.";
   } finally {
-    runInferenceBtn.textContent = "Run Classification →";
-    runInferenceBtn.disabled = false;
+    if (reqId === activeInferenceId) {
+      const telemetryPanel = document.querySelector(".telemetry-panel");
+      if (telemetryPanel) telemetryPanel.style.opacity = "1";
+      runInferenceBtn.textContent = "Run Classification →";
+      runInferenceBtn.disabled = false;
+    }
   }
 }
 
@@ -316,6 +403,8 @@ function renderPredictionOutput(data) {
   const compactBarRight = document.querySelector(".compact-bar-Right");
   const telemetryPanel = document.querySelector(".telemetry-panel");
   const confidenceMeterBox = document.querySelector(".confidence-meter-box");
+
+  if (culinaryCardEl) culinaryCardEl.classList.remove("is-processing");
 
   // Update floating dish image beside dish title
   if (currentPreviewSrc) {

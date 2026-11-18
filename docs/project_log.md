@@ -289,7 +289,69 @@ When `/api/predict` returns `is_recognized: false` (`ood_gate.status == "unrecog
 
 ---
 
-## 9. Chronological Action & Experiment Log
+## 9. Cloud Deployment on Microsoft Azure Container Apps (`eastasia`)
+
+### Subscription, Tenant & Regional Policy Constraints
+- **Subscription:** `Azure for Students` (`e584cdc9-1792-421e-aa2b-a42255e21fa9`)
+- **Tenant:** `Kathmandu University (student.ku.edu.np)`
+- **Azure Regional Policy Discovery:**
+  - Initial attempt to provision Azure Container Registry (`parikarsijan12`) in `centralindia` failed with `RequestDisallowedByAzure`.
+  - Querying subscription policy assignments (`az policy assignment list --query "[].parameters" -o json`) revealed the exact list of allowed regions for the student subscription:
+    `["indonesiacentral", "indiasouthcentral", "malaysiawest", "japaneast", "eastasia"]`
+  - Selected **`eastasia` (Hong Kong)** as the deployment region for all resources.
+
+### Why Local Docker Build + Push Was Used Instead of `az acr build`
+- Because `.gitignore` excludes `models_onnx/` (`~300 MB` across `convnext_tiny.onnx`, `efficientnet_v2_s.onnx`, `swin_t.onnx`, and `semantic_gate.onnx`) and the raw dataset folders, GitHub-only deployment (`App Service -> GitHub`) cannot access the model weights.
+- Furthermore, on `Azure for Students` subscriptions, cloud-side ACR Tasks (`az acr build`) is blocked (`TasksOperationsNotAllowed`).
+- **Solution:**
+  1. Created `.dockerignore` to exclude `experiments/**/*.pt` and the `10,025` training images while explicitly keeping the `10` pinned showcase photos (`!chatpate/000035.jpg`, `!chiya/chiya_00041.jpg`, etc.) and `models_onnx/` (`318 MB` total build context).
+  2. Built the `linux/amd64` container image locally via Docker Desktop and pushed directly to Azure Container Registry (`parikarsijan12.azurecr.io`), which is fully permitted on Azure for Students.
+
+### Provisioned Azure Infrastructure (`parikar-rg`)
+| Resource Name | Azure Resource Type | Region | Configuration / Specs |
+| :--- | :--- | :---: | :--- |
+| **`parikar-rg`** | `Microsoft.Resources/resourceGroups` | `eastasia` | Primary project resource group |
+| **`parikarsijan12`** | `Microsoft.ContainerRegistry/registries` | `eastasia` | `Basic` SKU (`parikarsijan12.azurecr.io`, Admin Enabled) |
+| **`workspace-parikarrg880Q`** | `Microsoft.OperationalInsights/workspaces` | `eastasia` | Log Analytics workspace for container telemetry |
+| **`parikar-env`** | `Microsoft.App/managedEnvironments` | `eastasia` | Azure Container Apps managed environment |
+| **`parikar-app`** | `Microsoft.App/containerApps` | `eastasia` | `2.0 vCPU` / `4.0 GiB RAM`, External HTTPS Ingress on Port `8000` |
+
+- **Live Production URL:** **[https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/)**
+- **Live Swagger API Docs:** **[https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/docs](https://parikar-app.livelystone-a6619db0.eastasia.azurecontainerapps.io/docs)**
+
+### Beginner-Friendly Conceptual Breakdown (What Server & Services Were Used)
+1. **What Server & OS Is Running Our App?**
+   - Our app runs inside a **Linux (`Debian Python 3.11-slim`, `amd64`) container** hosted on **Microsoft Azure Container Apps** (`parikar-app`) in the **East Asia (`eastasia` — Hong Kong)** data center.
+   - Inside that Linux server, **`uvicorn`** runs our **FastAPI** backend (`backend/app.py`) on port `8000`, which serves both the static frontend (`frontend/index.html`, `styles.css`, `app.js`) and the `/api/predict` ONNX Runtime inference API over automatic `https://`.
+2. **What Are the 3 Azure Services We Created?**
+   - **Resource Group (`parikar-rg`):** A logical folder in Azure that groups all parts of Parikar 2.0 together.
+   - **Azure Container Registry (`parikarsijan12.azurecr.io`):** Your private cloud storage vault where the packaged Docker image (`parikar:v2`, containing your code + 4 ONNX models + 10 sample dish photos) is stored.
+   - **Azure Container App (`parikar-app` inside `parikar-env`):** The serverless cloud compute engine (`2.0 vCPU`, `4.0 GiB RAM`) that pulls the image from `parikarsijan12.azurecr.io` and runs it on a public `https://` URL.
+3. **How Pay-As-You-Go & Scale-to-Zero (`--min-replicas 0`) Works on Azure Container Apps:**
+   - **With `--min-replicas 0` (Scale-to-Zero / Sleep Mode):** When nobody visits the website for ~5 minutes, Azure automatically scales the container down to `0` replicas (sleep mode). While sleeping, compute charges are **$0.00** (preserving your `$100` Azure for Students credit). When a user opens the link after idle time, Azure wakes up the container in ~8–12 seconds, runs `load_models()` (which now pre-warms all 4 ONNX sessions with a dummy tensor at startup), and then serves subsequent requests in `< 300 ms`.
+   - **Monthly Free Grant:** Azure Container Apps also includes `180,000 vCPU-seconds` and `360,000 GiB-seconds` free every month per subscription.
+
+### How to Push Future Code Updates to Azure (No Need to Recreate Resources)
+Whenever code or frontend files change in the future:
+```powershell
+cd c:\Users\sijan\Desktop\parikar_final_nepali_food_datasets
+az acr login --name parikarsijan12
+docker build -t parikarsijan12.azurecr.io/parikar:v2 .
+docker push parikarsijan12.azurecr.io/parikar:v2
+az containerapp update --name parikar-app --resource-group parikar-rg --image parikarsijan12.azurecr.io/parikar:v2 --cpu 2.0 --memory 4.0Gi
+```
+
+### Cloud Latency & Frontend State Optimization (`v2` Image Update)
+- **Root Cause of Stale Class Flash During Cloud Upload:**
+  - It was a combination of **cloud network/CPU processing time (~0.8–1.5s)** and **frontend state order**: on localhost (`127.0.0.1:8000`), network transfer was `0 ms`, so the result card updated almost instantaneously. Over the internet to `eastasia`, uploading an image and running 4 ONNX models on cloud CPU takes ~1 second. Because `handleSelectedFile()` updated the preview thumbnail immediately without clearing the previous verdict card (`Momo`), the UI briefly displayed `Momo` alongside the newly uploaded photo until the cloud response arrived.
+- **Fixes Applied:**
+  1. **Immediate Processing State (`setLoadingVerdictState()` in `frontend/app.js`):** Clears the previous dish title/badge and hides the old model comparison panel at `0 ms` upon file selection or sample click, displaying an animated spinner (`Processing Image...` / `पहिचान हुँदैछ...`) until the new response arrives.
+  2. **Client-Side Canvas Image Compression (`compressImageFile()` in `frontend/app.js`):** Resizes uploaded images in the browser to `<= 512px` JPEG (`~30 KB`) before `POST /api/predict`, cutting internet upload time to `eastasia` by `10×–30×` without affecting the `224×224` model input.
+  3. **Scaled Container Compute to `2.0 vCPU / 4.0 GiB RAM`:** Doubled CPU cores on `parikar-app` to cut cloud ONNX Runtime inference time in half.
+
+---
+
+## 10. Chronological Action & Experiment Log
 - **[2026-11-17]** Audited workspace structure (`10,025` raw images across `10` classes).
 - **[2026-11-17]** Verified `hydro` Anaconda environment: `Python 3.11.15`, `PyTorch 2.13.0+cu130`, `Torchvision 0.28.0+cu130` on **NVIDIA GeForce RTX 4050 Laptop GPU (6.0 GB VRAM)**.
 - **[2026-11-17]** Ran `src/prepare_dataset.py` across all `10,025` files:

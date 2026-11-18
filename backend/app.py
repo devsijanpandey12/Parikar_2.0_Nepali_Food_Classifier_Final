@@ -343,6 +343,19 @@ def load_models():
             ALLOWED_IMAGENET_INDICES = meta.get("allowed_indices", [])
             EXPLICIT_OUTSIDE_FOODS = set(meta.get("explicit_western_foods", []))
 
+    # Pre-warm all ONNX Runtime sessions at container startup so the first user upload has zero graph-init lag
+    dummy_input = np.zeros((1, 3, 224, 224), dtype=np.float32)
+    for sess in ORT_SESSIONS.values():
+        try:
+            sess.run(["logits"], {"input": dummy_input})
+        except Exception:
+            pass
+    if SEMANTIC_GATE_SESSION is not None:
+        try:
+            SEMANTIC_GATE_SESSION.run(["logits"], {"input": dummy_input})
+        except Exception:
+            pass
+
 
 @app.on_event("startup")
 def on_startup():
